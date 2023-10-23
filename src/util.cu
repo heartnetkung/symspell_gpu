@@ -14,7 +14,7 @@ void print_int3(Int3* seqs, int len, char prefix) {
 }
 
 void print_results(SymspellResult* results, int len) {
-	printf("SymspellResult(len=%d){\n");
+	printf("SymspellResult(len=%d){\n", len);
 	int n_elements = len < 5 ? len : 5;
 	for (int i = 0; i < n_elements; i++) {
 		SymspellResult result = results[i];
