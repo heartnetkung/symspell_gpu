@@ -1,3 +1,4 @@
+#include <stdint.h>
 
 struct Int3 {
 	uint32_t entry[3] = {0L, 0L, 0L};
@@ -5,3 +6,9 @@ struct Int3 {
 
 const int MAX_INPUT_LENGTH = 18;
 const int MAX_DISTANCE = 4;
+
+struct SymspellResult {
+	int i;
+	int j;
+	int distance;
+};
