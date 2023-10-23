@@ -15,7 +15,7 @@ const char HELP_TEXT[] = "symspell_gpu\n"
                          "\t -n or --input-length [number] (required): set the number of sequences given in the input file\n";
 
 
-int parse_file(char* path, int arrLen, Int3 result) {
+int parse_file(char* path, int arrLen, Int3* result) {
 	FILE* file = fopen(path, "r");
 	const int BUFFER_SIZE = 256;
 	char line[BUFFER_SIZE];
@@ -34,7 +34,6 @@ int parse_file(char* path, int arrLen, Int3 result) {
 
 int parse_opts(int argc, char **argv, SymspellArgs ans) {
 	char* current;
-	char* path1;
 
 	for (int i = 1; i < argc; i++) {
 		current = argv[i];
@@ -56,7 +55,7 @@ int parse_opts(int argc, char **argv, SymspellArgs ans) {
 				return print_err("Error: distance must be a valid number ranging from 1-4");
 		}
 		else if (strcmp(current, "-p") == 0 || strcmp(current, "--input-path") == 0)
-			path1 = argv[++i];
+			ans.seq1Path = argv[++i];
 		else if (strcmp(current, "-n") == 0 || strcmp(current, "--input-length") == 0) {
 			ans.seq1Len = atoi(argv[++i]);
 			if (ans.seq1Len == 0)
@@ -66,7 +65,7 @@ int parse_opts(int argc, char **argv, SymspellArgs ans) {
 			return print_err("Error: unknown option");
 	}
 
-	if (ans.seq1 == NULL)
+	if (ans.seq1Path == NULL)
 		return print_err("Error: missing path for seq1");
 	if (ans.seq1Len == 0)
 		return print_err("Error: missing length for seq1");
@@ -80,8 +79,6 @@ int main(int argc, char **argv) {
 	int returnCode = parse_opts(argc, argv, args);
 	if (returnCode != -1)
 		return returnCode;
-
-
 
 	if (args.verbose)
 		print_args(args);
