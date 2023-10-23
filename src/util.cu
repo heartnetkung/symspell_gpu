@@ -28,6 +28,9 @@ void print_args(SymspellArgs args) {
 	printf("\tdistance: %d\n", args.distance);
 	printf("\tverbose: %d\n", args.verbose);
 	printf("\tseq1Len: %d\n", args.seq1Len);
-	print_int3(args.seq1, args.seq1Len, '\t');
+	printf("\tseq1Path: %s\n", args.seq1Path);
+	printf("\tseq1: %s\n", args.seq1 == NULL ? "NULL" : "");
+	if (args.seq1 != NULL)
+		print_int3(args.seq1, args.seq1Len, '\t');
 	printf("}\n");
 }
