@@ -1,4 +1,4 @@
-#include "symspell.h"
+#include "util.cu"
 
 // A CDEFGHI KLMN PQRST VW Y
 const int A_char = (int)'A';
