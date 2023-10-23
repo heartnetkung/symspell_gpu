@@ -9,11 +9,12 @@ struct Int3 {
 
 struct SymspellArgs {
 	int distance = 1;
+	int verbose = 0;
+	char* seqPath = NULL;
+	int seq1Len = 0;
 	Int3* seq1 = NULL;
 	// Int3* seq2 = NULL;
-	int seq1Len = 0;
 	// int seq2Len = 0;
-	int verbose = 0;
 };
 //TODO add seq2 later
 

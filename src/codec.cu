@@ -1,16 +1,16 @@
 #include "util.cu"
 
 // A CDEFGHI KLMN PQRST VW Y
-const int A_char = (int)'A';
-const int before_A_char = A_char - 1;
-const int Y_char = (int) 'Y';
+const int A_CHAR = (int)'A';
+const int BEFORE_A_CHAR = A_CHAR - 1;
+const int Y_CHAR = (int) 'Y';
 
 /**
  * encode character into 5 bit value (0-31).
  * -1 for non amino acid character
 */
 int char_encode(char amino_acid) {
-	if (amino_acid < A_char || amino_acid > Y_char)
+	if (amino_acid < A_CHAR || amino_acid > Y_CHAR)
 		return -1;
 	switch (amino_acid) {
 	case 'B':
@@ -20,7 +20,7 @@ int char_encode(char amino_acid) {
 	case 'X':
 		return -1;
 	default:
-		return amino_acid - before_A_char;
+		return amino_acid - BEFORE_A_CHAR;
 	}
 }
 
@@ -60,7 +60,7 @@ char* str_decode(Int3 binary) {
 			return ans;
 		}
 
-		ans[i] = before_A_char + c;
+		ans[i] = BEFORE_A_CHAR + c;
 	}
 
 	ans[MAX_INPUT_LENGTH] = '\0';

@@ -1,11 +1,11 @@
 #include "symspell.h"
 
-int printErr(const char* str) {
+int print_err(const char* str) {
 	fprintf(stderr, "%s\n", str);
 	return 1;
 }
 
-void printInt3(Int3* seqs, int len, char prefix) {
+void print_int3(Int3* seqs, int len, char prefix) {
 	int n_elements = len < 5 ? len : 5;
 	for (int i = 0; i < n_elements; i++) {
 		uint32_t* entry = seqs[i].entry;
@@ -13,7 +13,7 @@ void printInt3(Int3* seqs, int len, char prefix) {
 	}
 }
 
-void printResults(SymspellResult* results, int len) {
+void print_results(SymspellResult* results, int len) {
 	printf("SymspellResult(len=%d){\n");
 	int n_elements = len < 5 ? len : 5;
 	for (int i = 0; i < n_elements; i++) {
@@ -23,11 +23,11 @@ void printResults(SymspellResult* results, int len) {
 	printf("}\n");
 }
 
-void printArgs(SymspellArgs args) {
+void print_args(SymspellArgs args) {
 	printf("SymspellArgs{\n");
 	printf("\tdistance: %d\n", args.distance);
 	printf("\tverbose: %d\n", args.verbose);
 	printf("\tseq1Len: %d\n", args.seq1Len);
-	printInt3(args.seq1, args.seq1Len, '\t');
+	print_int3(args.seq1, args.seq1Len, '\t');
 	printf("}\n");
 }

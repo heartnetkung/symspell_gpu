@@ -15,7 +15,7 @@ const char HELP_TEXT[] = "symspell_gpu\n"
                          "\t -n or --input-length [number] (required): set the number of sequences given in the input file\n";
 
 
-int parseFile(char* path, int arrLen, Int3 result) {
+int parse_file(char* path, int arrLen, Int3 result) {
 	FILE* file = fopen(path, "r");
 	const int BUFFER_SIZE = 256;
 	char line[BUFFER_SIZE];
@@ -32,7 +32,7 @@ int parseFile(char* path, int arrLen, Int3 result) {
 	return 0;
 }
 
-int parseOpts(int argc, char **argv, SymspellArgs ans) {
+int parse_opts(int argc, char **argv, SymspellArgs ans) {
 	char* current;
 	char* path1;
 
@@ -53,23 +53,23 @@ int parseOpts(int argc, char **argv, SymspellArgs ans) {
 		else if (strcmp(current, "-d") == 0 || strcmp(current, "--distance") == 0) {
 			ans.distance = atoi(argv[++i]);
 			if (ans.distance < 1 || ans.distance > MAX_DISTANCE)
-				return printErr("Error: distance must be a valid number ranging from 1-4");
+				return print_err("Error: distance must be a valid number ranging from 1-4");
 		}
 		else if (strcmp(current, "-p") == 0 || strcmp(current, "--input-path") == 0)
 			path1 = argv[++i];
 		else if (strcmp(current, "-n") == 0 || strcmp(current, "--input-length") == 0) {
 			ans.seq1Len = atoi(argv[++i]);
 			if (ans.seq1Len == 0)
-				return printErr("Error: invalid input length");
+				return print_err("Error: invalid input length");
 		}
 		else
-			return printErr("Error: unknown option");
+			return print_err("Error: unknown option");
 	}
 
 	if (ans.seq1 == NULL)
-		return printErr("Error: missing path for seq1");
+		return print_err("Error: missing path for seq1");
 	if (ans.seq1Len == 0)
-		return printErr("Error: missing length for seq1");
+		return print_err("Error: missing length for seq1");
 
 	return -1;
 }
@@ -77,12 +77,14 @@ int parseOpts(int argc, char **argv, SymspellArgs ans) {
 
 int main(int argc, char **argv) {
 	SymspellArgs args;
-	int returnCode = parseOpts(argc, argv, args);
+	int returnCode = parse_opts(argc, argv, args);
 	if (returnCode != -1)
 		return returnCode;
 
+
+
 	if (args.verbose)
-		printArgs(args);
+		print_args(args);
 
 	return 0;
 }
