@@ -11,6 +11,12 @@ TEST_CASE( "char_encode()", "[codec]" ) {
 }
 
 TEST_CASE( "str_encode()", "[codec]" ) {
+	char input[] = "A";
+	Int3 output = str_encode(input);
+	REQUIRE(output.entry[0]==0x08000000);
+	REQUIRE(output.entry[1]==0);
+	REQUIRE(output.entry[2]==0);
+
 	char input2[] = "AC";
 	REQUIRE(strcmp(str_decode(str_encode(input2)), input2) == 0);
 }
