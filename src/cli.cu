@@ -14,15 +14,6 @@ const char HELP_TEXT[] = "symspell_gpu\n"
                          "\t -p or --input-path [str] (required): set the path of input file which is a text file containing one CDR3 sequence per line\n"
                          "\t -n or --input-length [number] (required): set the number of sequences given in the input file\n";
 
-struct Args {
-	int distance = 1;
-	Int3* seq1 = NULL;
-	// Int3* seq2 = NULL;
-	int seq1Len = 0;
-	// int seq2Len = 0;
-	int verbose = 0;
-};
-//TODO add seq2 later
 
 int parseFile(char* path, int arrLen, Int3 result) {
 	FILE* file = fopen(path, "r");
@@ -41,7 +32,7 @@ int parseFile(char* path, int arrLen, Int3 result) {
 	return 0;
 }
 
-int parseOpts(int argc, char **argv, Args ans) {
+int parseOpts(int argc, char **argv, SymspellArgs ans) {
 	char* current;
 	char* path1;
 
@@ -90,13 +81,12 @@ int parseOpts(int argc, char **argv, Args ans) {
 		return 1;
 	}
 
-
 	return -1;
 }
 
 
 int main(int argc, char **argv) {
-	Args args;
+	SymspellArgs args;
 	int returnCode = parseOpts(argc, argv, args);
 	if (returnCode != -1)
 		return returnCode;
