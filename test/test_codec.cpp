@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <stdio.h>
-#include "../src/parser.cu"
+#include "../src/codec.cu"
 #include <string.h>
 
 TEST_CASE( "char_encode", "[add]" ) {
