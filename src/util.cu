@@ -13,8 +13,14 @@ void printInt3(Int3* seqs, int len, char prefix) {
 	}
 }
 
-void printResults(SymspellResult* results) {
-
+void printResults(SymspellResult* results, int len) {
+	printf("SymspellResult(len=%d){\n");
+	int n_elements = len < 5 ? len : 5;
+	for (int i = 0; i < n_elements; i++) {
+		SymspellResult result = results[i];
+		printf("  %d %d %d \n", result.i, result.j, result.distance);
+	}
+	printf("}\n");
 }
 
 void printArgs(SymspellArgs args) {
