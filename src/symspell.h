@@ -24,3 +24,5 @@ struct SymspellResult {
 	int j;
 	int distance;
 };
+
+enum ReturnCode {SUCCESS, ERROR, EXIT};

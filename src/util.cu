@@ -2,7 +2,7 @@
 
 int print_err(const char* str) {
 	fprintf(stderr, "%s\n", str);
-	return 1;
+	return ERROR;
 }
 
 void print_int3(Int3* seqs, int len, char prefix) {
@@ -28,7 +28,7 @@ void print_args(SymspellArgs args) {
 	printf("\tdistance: %d\n", args.distance);
 	printf("\tverbose: %d\n", args.verbose);
 	printf("\tseq1Len: %d\n", args.seq1Len);
-	printf("\tseq1Path: %s\n", args.seq1Path);
+	printf("\tseq1Path: \"%s\"\n", args.seq1Path);
 	printf("\tseq1: %s\n", args.seq1 == NULL ? "NULL" : "");
 	if (args.seq1 != NULL)
 		print_int3(args.seq1, args.seq1Len, '\t');

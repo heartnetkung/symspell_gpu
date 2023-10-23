@@ -14,22 +14,19 @@ const char HELP_TEXT[] = "symspell_gpu\n"
                          "\t -p or --input-path [str] (required): set the path of input file which is a text file containing one CDR3 sequence per line\n"
                          "\t -n or --input-length [number] (required): set the number of sequences given in the input file\n";
 
-
-int parse_file(char* path, int arrLen, Int3* result) {
+int parse_file(char* path, int len, Int3* result) {
 	FILE* file = fopen(path, "r");
-	const int BUFFER_SIZE = 256;
+	const int BUFFER_SIZE = 50;
 	char line[BUFFER_SIZE];
-
 	int count = 0;
 
 	while (fgets(line, BUFFER_SIZE, file)) {
-		printf("%d %s\n", count, line);
 		str_encode(line);
 		count++;
 	}
 
 	fclose(file);
-	return 0;
+	return SUCCESS;
 }
 
 int parse_opts(int argc, char **argv, SymspellArgs* ans) {
@@ -40,15 +37,14 @@ int parse_opts(int argc, char **argv, SymspellArgs* ans) {
 
 		if (strcmp(current, "-v") == 0 || strcmp(current, "--version") == 0) {
 			printf("%s", VERSION);
-			return 0;
+			return EXIT;
 		}
 		else if (strcmp(current, "-h") == 0 || strcmp(current, "--help") == 0) {
 			printf("%s", HELP_TEXT);
-			return 0;
+			return EXIT;
 		}
-		else if (strcmp(current, "-V") == 0 || strcmp(current, "--verbose") == 0) {
+		else if (strcmp(current, "-V") == 0 || strcmp(current, "--verbose") == 0)
 			ans->verbose = 1;
-		}
 		else if (strcmp(current, "-d") == 0 || strcmp(current, "--distance") == 0) {
 			int distance = ans->distance = atoi(argv[++i]);
 			if (distance < 1 || distance > MAX_DISTANCE)
@@ -70,15 +66,17 @@ int parse_opts(int argc, char **argv, SymspellArgs* ans) {
 	if (ans->seq1Len == 0)
 		return print_err("Error: missing length for seq1");
 
-	return -1;
+	return SUCCESS;
 }
 
 
 int main(int argc, char **argv) {
 	SymspellArgs args;
-	int returnCode = parse_opts(argc, argv, &args);
-	if (returnCode != -1)
-		return returnCode;
+	int retval;
+
+	retval = parse_opts(argc, argv, &args);
+	if (retval != SUCCESS)
+		return retval;
 
 	if (args.verbose)
 		print_args(args);
