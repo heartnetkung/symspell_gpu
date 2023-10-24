@@ -16,14 +16,31 @@ const char HELP_TEXT[] = "symspell_gpu\n"
 
 int parse_file(char* path, int len, Int3* result) {
 	FILE* file = fopen(path, "r");
+	if (file == NULL)
+		return print_err("file reading failed");
+
 	const int BUFFER_SIZE = 50;
 	char line[BUFFER_SIZE];
-	int count = 0;
+	int lineNumber = 0, inputCount = 0;
+	Int3 newInt3;
 
 	while (fgets(line, BUFFER_SIZE, file)) {
-		str_encode(line);
-		count++;
+		lineNumber++;
+		if (strcmp(line, "\n") == 0 || strcmp(line, " \n") == 0)
+			continue;
+
+		newInt3 = str_encode(line);
+		if (newInt3.entry[0] == 0) {
+			fclose(file);
+			fprintf(stderr, "Error: parsing error at line %d\n", lineNumber);
+			return ERROR;
+		}
+
+		result[inputCount++] = newInt3;
 	}
+
+	if (inputCount != len)
+		return print_err("input length doesn't match with the actual");
 
 	fclose(file);
 	return SUCCESS;
@@ -48,23 +65,23 @@ int parse_opts(int argc, char **argv, SymspellArgs* ans) {
 		else if (strcmp(current, "-d") == 0 || strcmp(current, "--distance") == 0) {
 			int distance = ans->distance = atoi(argv[++i]);
 			if (distance < 1 || distance > MAX_DISTANCE)
-				return print_err("Error: distance must be a valid number ranging from 1-4");
+				return print_err("distance must be a valid number ranging from 1-4");
 		}
 		else if (strcmp(current, "-p") == 0 || strcmp(current, "--input-path") == 0)
 			ans->seq1Path = argv[++i];
 		else if (strcmp(current, "-n") == 0 || strcmp(current, "--input-length") == 0) {
 			ans->seq1Len = atoi(argv[++i]);
 			if (ans->seq1Len == 0)
-				return print_err("Error: invalid input length");
+				return print_err("invalid input length");
 		}
 		else
-			return print_err("Error: unknown option");
+			return print_err("unknown option");
 	}
 
 	if (ans->seq1Path == NULL)
-		return print_err("Error: missing path for seq1");
+		return print_err("missing path for seq1");
 	if (ans->seq1Len == 0)
-		return print_err("Error: missing length for seq1");
+		return print_err("missing length for seq1");
 
 	return SUCCESS;
 }
@@ -78,8 +95,17 @@ int main(int argc, char **argv) {
 	if (retval != SUCCESS)
 		return retval;
 
+	cudaMallocHost((void**)&args.seq1, sizeof(Int3) * args.seq1Len);
+	retval = parse_file(args.seq1Path, args.seq1Len, args.seq1);
+	if (retval != SUCCESS) {
+		cudaFree(args.seq1);
+		return retval;
+	}
+
 	if (args.verbose)
 		print_args(args);
 
+	//clean up
+	cudaFree(args.seq1);
 	return 0;
 }

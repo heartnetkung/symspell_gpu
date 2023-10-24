@@ -1,7 +1,7 @@
 #include "symspell.h"
 
 int print_err(const char* str) {
-	fprintf(stderr, "%s\n", str);
+	fprintf(stderr, "Error: %s\n", str);
 	return ERROR;
 }
 
