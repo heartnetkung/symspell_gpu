@@ -31,7 +31,7 @@ Int3 str_encode(char *str) {
 	Int3 ans;
 	for (int i = 0; i < MAX_INPUT_LENGTH; i++) {
 		char c = str[i];
-		if (c == '\0')
+		if (c == '\0' || c == '\n')
 			break; // end
 
 		int value = char_encode(c);
@@ -64,5 +64,71 @@ char* str_decode(Int3 binary) {
 	}
 
 	ans[MAX_INPUT_LENGTH] = '\0';
+	return ans;
+}
+
+/**
+ * find the string length in original form
+*/
+int len_decode(Int3 binary) {
+	int ans = 18;
+	int lastIndex = 2;
+	uint32_t* entry = binary.entry;
+	if (entry[2] == 0) {
+		ans -= 6;
+		lastIndex = 1;
+	}
+	if (entry[1] == 0) {
+		ans -= 6;
+		lastIndex = 0;
+	}
+	for (int i = 5; i >= 0; i--) {
+		char c = (binary.entry[lastIndex] >> (27 - 5 * i)) & 0x1F;
+		if (c != 0)
+			break;
+		ans--;
+	}
+	return ans;
+}
+
+/**
+ * remove one character from the string in binary form (without turning it into the original string form)
+*/
+Int3 remove_char(Int3 binary, int position) {
+	Int3 ans;
+	uint32_t* ansEntry = ans.entry;
+	uint32_t* binEntry = binary.entry;
+	uint32_t b2 = binEntry[2], b1 = binEntry[1], b0 = binEntry[0];
+
+	// approximate shift
+	ansEntry[2] = b2 << 5;
+	if (position < 12)
+		ansEntry[1] = (b1 << 5) | ((b2 & 0xF8000000) >> 25);
+	else
+		ansEntry[1] = b1;
+	if (position < 6)
+		ansEntry[0] = (b0 << 5) | ((b1 & 0xF8000000) >> 25);
+	else
+		ansEntry[0] = b0;
+
+	// handle boundary
+	int lastIndex = position / 6;
+	switch (position % 6) {
+	case 1:
+		ansEntry[lastIndex] = (binEntry[lastIndex] & 0xF8000000) | (ansEntry[lastIndex] & 0x7FFFFFF);
+		break;
+	case 2:
+		ansEntry[lastIndex] = (binEntry[lastIndex] & 0xFFC00000) | (ansEntry[lastIndex] & 0x03FFFFF);
+		break;
+	case 3:
+		ansEntry[lastIndex] = (binEntry[lastIndex] & 0xFFFE0000) | (ansEntry[lastIndex] & 0x001FFFF);
+		break;
+	case 4:
+		ansEntry[lastIndex] = (binEntry[lastIndex] & 0xFFFFF000) | (ansEntry[lastIndex] & 0x0000FFF);
+		break;
+	case 5:
+		ansEntry[lastIndex] = (binEntry[lastIndex] & 0xFFFFFF80) | (ansEntry[lastIndex] & 0x000007F);
+		break;
+	}//default do nothing
 	return ans;
 }
