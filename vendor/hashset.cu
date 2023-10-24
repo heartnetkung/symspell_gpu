@@ -16,7 +16,6 @@
  */
 
 #include "hashset.h"
-#include <assert.h>
 
 static const unsigned int prime_1 = 73;
 static const unsigned int prime_2 = 5009;
@@ -96,7 +95,6 @@ static void maybe_rehash(hashset_t set)
         set->items = calloc(set->capacity, sizeof(size_t));
         set->nitems = 0;
         set->n_deleted_items = 0;
-        assert(set->items);
         for (ii = 0; ii < old_capacity; ii++) {
             hashset_add_member(set, (void *)old_items[ii]);
         }
