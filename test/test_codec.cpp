@@ -58,5 +58,42 @@ TEST_CASE("remove_char()", "[codec]") {
 	REQUIRE(strcmp(str_decode(remove_char(binForm2,0)),"CD") == 0);
 	REQUIRE(strcmp(str_decode(remove_char(binForm2,1)),"AD") == 0);
 	REQUIRE(strcmp(str_decode(remove_char(binForm2,2)),"AC") == 0);
+}
 
+
+char FILE1[] = "../test/sample/input1.txt";
+char FILE2[] = "../test/sample/input2.txt";
+char FILE3[] = "../test/sample/input3.txt";
+
+TEST_CASE( "parseFile()", "[codec]" ) {
+
+	int seq1Len = 3;
+	Int3* seq1 = (Int3*)malloc(sizeof(Int3) * seq1Len);
+	int result = parse_file(FILE1, seq1Len, seq1);
+	REQUIRE(result == SUCCESS);
+	REQUIRE(strcmp(str_decode(seq1[0]),"CAAA")==0);
+	REQUIRE(strcmp(str_decode(seq1[1]),"AAAA")==0);
+	REQUIRE(strcmp(str_decode(seq1[2]),"AAAD")==0);
+	free(seq1);
+
+	int seq2Len = 3;
+	Int3* seq2 = (Int3*)malloc(sizeof(Int3) * seq2Len);
+	result = parse_file(FILE2, seq2Len, seq2);
+	REQUIRE(result == SUCCESS);
+	REQUIRE(strcmp(str_decode(seq2[0]),"CAAA")==0);
+	REQUIRE(strcmp(str_decode(seq2[1]),"AAAA")==0);
+	REQUIRE(strcmp(str_decode(seq2[2]),"AAAD")==0);
+	free(seq2);
+
+	int seq3Len = 2;
+	Int3* seq3 = (Int3*)malloc(sizeof(Int3) * seq3Len);
+	result = parse_file(FILE1, seq3Len, seq3);
+	REQUIRE(result == ERROR);
+	free(seq3);
+
+	int seq4Len = 3;
+	Int3* seq4 = (Int3*)malloc(sizeof(Int3) * seq4Len);
+	result = parse_file(FILE3, seq4Len, seq4);
+	REQUIRE(result == ERROR);
+	free(seq4);
 }

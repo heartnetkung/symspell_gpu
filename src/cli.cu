@@ -1,4 +1,3 @@
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <regex.h>
@@ -13,38 +12,6 @@ const char HELP_TEXT[] = "symspell_gpu\n"
                          "\t -d or --distance [number]: set the distance threshold defining the neighbor\n"
                          "\t -p or --input-path [str] (required): set the path of input file which is a text file containing one CDR3 sequence per line\n"
                          "\t -n or --input-length [number] (required): set the number of sequences given in the input file\n";
-
-int parse_file(char* path, int len, Int3* result) {
-	FILE* file = fopen(path, "r");
-	if (file == NULL)
-		return print_err("file reading failed");
-
-	const int BUFFER_SIZE = 50;
-	char line[BUFFER_SIZE];
-	int lineNumber = 0, inputCount = 0;
-	Int3 newInt3;
-
-	while (fgets(line, BUFFER_SIZE, file)) {
-		lineNumber++;
-		if (strcmp(line, "\n") == 0 || strcmp(line, " \n") == 0)
-			continue;
-
-		newInt3 = str_encode(line);
-		if (newInt3.entry[0] == 0) {
-			fclose(file);
-			fprintf(stderr, "Error: parsing error at line %d\n", lineNumber);
-			return ERROR;
-		}
-
-		result[inputCount++] = newInt3;
-	}
-
-	if (inputCount != len)
-		return print_err("input length doesn't match with the actual");
-
-	fclose(file);
-	return SUCCESS;
-}
 
 int parse_opts(int argc, char **argv, SymspellArgs* ans) {
 	char* current;
@@ -107,5 +74,9 @@ int main(int argc, char **argv) {
 
 	//clean up
 	cudaFree(args.seq1);
+
+	//success
+	if (args.verbose)
+		printf("success\n");
 	return 0;
 }
