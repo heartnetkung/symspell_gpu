@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <regex.h>
-#include "codec.cu"
+#include "symspell.cu"
 
 const char VERSION[] = "0.0.1\n";
 const char HELP_TEXT[] = "symspell_gpu\n"
@@ -57,15 +57,16 @@ int parse_opts(int argc, char **argv, SymspellArgs* ans) {
 int main(int argc, char **argv) {
 	SymspellArgs args;
 	int retval;
+	Int3 seq1;
 
 	retval = parse_opts(argc, argv, &args);
 	if (retval != SUCCESS)
 		return retval;
 
-	cudaMallocHost((void**)&args.seq1, sizeof(Int3) * args.seq1Len);
-	retval = parse_file(args.seq1Path, args.seq1Len, args.seq1);
+	cudaMallocHost((void**)&seq1, sizeof(Int3) * args.seq1Len);
+	retval = parse_file(args.seq1Path, args.seq1Len, seq1);
 	if (retval != SUCCESS) {
-		cudaFree(args.seq1);
+		cudaFree(seq1);
 		return retval;
 	}
 
@@ -73,10 +74,11 @@ int main(int argc, char **argv) {
 		print_args(args);
 
 	//clean up
-	cudaFree(args.seq1);
+	cudaFree(seq1);
 
 	//success
 	if (args.verbose)
 		printf("success\n");
+
 	return 0;
 }

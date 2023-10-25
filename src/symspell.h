@@ -12,11 +12,11 @@ struct SymspellArgs {
 	int verbose = 0;
 	char* seq1Path = NULL;
 	int seq1Len = 0;
-	Int3* seq1 = NULL;
 	// Int3* seq2 = NULL;
 	// int seq2Len = 0;
 };
 //TODO add seq2 later
+//TODO add outputPath
 
 
 struct SymspellResult {
