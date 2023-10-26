@@ -31,33 +31,33 @@ TEST_CASE("remove_char()", "[codec]") {
 	char input[] = "ACDEFGHIKLMNPQRSTV";
 	Int3 binForm = str_encode(input);
 
-	REQUIRE(strcmp(str_decode(remove_char(binForm,0)),"CDEFGHIKLMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,1)),"ADEFGHIKLMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,2)),"ACEFGHIKLMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,3)),"ACDFGHIKLMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,4)),"ACDEGHIKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 0)), "CDEFGHIKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 1)), "ADEFGHIKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 2)), "ACEFGHIKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 3)), "ACDFGHIKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 4)), "ACDEGHIKLMNPQRSTV") == 0);
 
-	REQUIRE(strcmp(str_decode(remove_char(binForm,5)),"ACDEFHIKLMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,6)),"ACDEFGIKLMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,7)),"ACDEFGHKLMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,8)),"ACDEFGHILMNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,9)),"ACDEFGHIKMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 5)), "ACDEFHIKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 6)), "ACDEFGIKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 7)), "ACDEFGHKLMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 8)), "ACDEFGHILMNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 9)), "ACDEFGHIKMNPQRSTV") == 0);
 
-	REQUIRE(strcmp(str_decode(remove_char(binForm,10)),"ACDEFGHIKLNPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,11)),"ACDEFGHIKLMPQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,12)),"ACDEFGHIKLMNQRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,13)),"ACDEFGHIKLMNPRSTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,14)),"ACDEFGHIKLMNPQSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 10)), "ACDEFGHIKLNPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 11)), "ACDEFGHIKLMPQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 12)), "ACDEFGHIKLMNQRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 13)), "ACDEFGHIKLMNPRSTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 14)), "ACDEFGHIKLMNPQSTV") == 0);
 
-	REQUIRE(strcmp(str_decode(remove_char(binForm,15)),"ACDEFGHIKLMNPQRTV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,16)),"ACDEFGHIKLMNPQRSV") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm,17)),"ACDEFGHIKLMNPQRST") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 15)), "ACDEFGHIKLMNPQRTV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 16)), "ACDEFGHIKLMNPQRSV") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm, 17)), "ACDEFGHIKLMNPQRST") == 0);
 
 	char input2[] = "ACD";
 	Int3 binForm2 = str_encode(input2);
-	REQUIRE(strcmp(str_decode(remove_char(binForm2,0)),"CD") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm2,1)),"AD") == 0);
-	REQUIRE(strcmp(str_decode(remove_char(binForm2,2)),"AC") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm2, 0)), "CD") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm2, 1)), "AD") == 0);
+	REQUIRE(strcmp(str_decode(remove_char(binForm2, 2)), "AC") == 0);
 }
 
 
@@ -69,31 +69,31 @@ TEST_CASE( "parseFile()", "[codec]" ) {
 
 	int seq1Len = 3;
 	Int3* seq1 = (Int3*)malloc(sizeof(Int3) * seq1Len);
-	int result = parse_file(FILE1, seq1Len, seq1);
+	int result = parse_file(FILE1, seq1, seq1Len);
 	REQUIRE(result == SUCCESS);
-	REQUIRE(strcmp(str_decode(seq1[0]),"CAAA")==0);
-	REQUIRE(strcmp(str_decode(seq1[1]),"AAAA")==0);
-	REQUIRE(strcmp(str_decode(seq1[2]),"AAAD")==0);
+	REQUIRE(strcmp(str_decode(seq1[0]), "CAAA") == 0);
+	REQUIRE(strcmp(str_decode(seq1[1]), "AAAA") == 0);
+	REQUIRE(strcmp(str_decode(seq1[2]), "AAAD") == 0);
 	free(seq1);
 
 	int seq2Len = 3;
 	Int3* seq2 = (Int3*)malloc(sizeof(Int3) * seq2Len);
-	result = parse_file(FILE2, seq2Len, seq2);
+	result = parse_file(FILE2, seq2, seq2Len);
 	REQUIRE(result == SUCCESS);
-	REQUIRE(strcmp(str_decode(seq2[0]),"CAAA")==0);
-	REQUIRE(strcmp(str_decode(seq2[1]),"AAAA")==0);
-	REQUIRE(strcmp(str_decode(seq2[2]),"AAAD")==0);
+	REQUIRE(strcmp(str_decode(seq2[0]), "CAAA") == 0);
+	REQUIRE(strcmp(str_decode(seq2[1]), "AAAA") == 0);
+	REQUIRE(strcmp(str_decode(seq2[2]), "AAAD") == 0);
 	free(seq2);
 
 	int seq3Len = 2;
 	Int3* seq3 = (Int3*)malloc(sizeof(Int3) * seq3Len);
-	result = parse_file(FILE1, seq3Len, seq3);
+	result = parse_file(FILE1, seq3, seq3Len);
 	REQUIRE(result == ERROR);
 	free(seq3);
 
 	int seq4Len = 3;
 	Int3* seq4 = (Int3*)malloc(sizeof(Int3) * seq4Len);
-	result = parse_file(FILE3, seq4Len, seq4);
+	result = parse_file(FILE3, seq4, seq4Len);
 	REQUIRE(result == ERROR);
 	free(seq4);
 }
