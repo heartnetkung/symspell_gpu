@@ -20,11 +20,4 @@ struct SymspellArgs {
 //TODO add seq2 later
 //TODO add outputPath
 
-
-struct SymspellResult {
-	int i;
-	int j;
-	int distance;
-};
-
 enum ReturnCode {SUCCESS, ERROR, EXIT};

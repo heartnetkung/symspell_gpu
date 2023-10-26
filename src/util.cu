@@ -15,16 +15,6 @@ void print_int3(Int3* seqs, int len, char prefix) {
 	}
 }
 
-void print_results(SymspellResult* results, int len) {
-	printf("SymspellResult(len=%d){\n", len);
-	int n_elements = len < 5 ? len : 5;
-	for (int i = 0; i < n_elements; i++) {
-		SymspellResult result = results[i];
-		printf("  %d %d %d \n", result.i, result.j, result.distance);
-	}
-	printf("}\n");
-}
-
 void print_args(SymspellArgs args) {
 	printf("SymspellArgs{\n");
 	printf("\tdistance: %d\n", args.distance);
