@@ -29,13 +29,17 @@ int parse_opts(int argc, char **argv, SymspellArgs* ans) {
 		}
 		else if (strcmp(current, "-V") == 0 || strcmp(current, "--verbose") == 0)
 			ans->verbose = 1;
+		else if (strcmp(current, "-c") == 0 || strcmp(current, "--check-output") == 0)
+			ans->checkOutput = 1;
+		else if (strcmp(current, "-p") == 0 || strcmp(current, "--input-path") == 0)
+			ans->seq1Path = argv[++i];
+		else if (strcmp(current, "-o") == 0 || strcmp(current, "--output-path") == 0)
+			ans->outputPath = argv[++i];
 		else if (strcmp(current, "-d") == 0 || strcmp(current, "--distance") == 0) {
 			int distance = ans->distance = atoi(argv[++i]);
 			if (distance < 1 || distance > MAX_DISTANCE)
 				return print_err("distance must be a valid number ranging from 1-4");
 		}
-		else if (strcmp(current, "-p") == 0 || strcmp(current, "--input-path") == 0)
-			ans->seq1Path = argv[++i];
 		else if (strcmp(current, "-n") == 0 || strcmp(current, "--input-length") == 0) {
 			ans->seq1Len = atoi(argv[++i]);
 			if (ans->seq1Len == 0)
