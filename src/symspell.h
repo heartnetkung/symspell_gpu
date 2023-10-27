@@ -1,10 +1,18 @@
+#ifndef SYMSPELL_H
+#define SYMSPELL_H
+
 #include <stdint.h>
 
 const int MAX_INPUT_LENGTH = 18;
+// up to 3060? or 816?
 const int MAX_DISTANCE = 4;
 
 struct Int3 {
 	uint32_t entry[3] = {0L, 0L, 0L};
+};
+
+struct Int2 {
+	uint32_t x = 0L, y = 0L;
 };
 
 struct SymspellArgs {
@@ -17,7 +25,16 @@ struct SymspellArgs {
 	// Int3* seq2 = NULL;
 	// int seq2Len = 0;
 };
-//TODO add seq2 later
-//TODO add outputPath
+
+struct SymspellOutput {
+	Int2* indexPairs = NULL;
+	int* pairwiseDistances = NULL;
+	int len = 0;
+};
 
 enum ReturnCode {SUCCESS, ERROR, EXIT};
+
+int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output);
+void symspell_free(SymspellOutput* output);
+
+#endif
