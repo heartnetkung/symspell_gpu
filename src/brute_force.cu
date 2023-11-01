@@ -59,23 +59,19 @@ std::unordered_set<Triplet, TripletHasher> pairwise_distance(Int3* inputs, int l
 }
 
 int check_intput(std::unordered_set<Triplet, TripletHasher> answer, SymspellOutput output) {
-    printf("A\n");
     if (output.len != answer.size())
         return 0;
 
-    printf("B\n");
     Int2 current;
     std::unordered_set<Triplet, TripletHasher> inputs;
     for (int i = 0; i < output.len; i++) {
         current = output.indexPairs[i];
         Triplet value(current.x, current.y, output.pairwiseDistances[i]);
-        printf("999 %d %d %d %lu \n", current.x, current.y, output.pairwiseDistances[i], answer.count(value));
         if (!answer.count(value))
             return 0;
         inputs.insert(value);
     }
 
-    printf("C\n");
     if (answer.size() != inputs.size())
         return 0;
 
