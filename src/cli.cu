@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "symspell.cu"
-// #include "brute_force_alg.cu"
+#include "brute_force.cu"
 
 const char VERSION[] = "0.0.1\n";
 const char HELP_TEXT[] = "symspell_gpu\n"
@@ -57,7 +57,6 @@ int parse_args(int argc, char **argv, SymspellArgs* ans) {
 
 	return SUCCESS;
 }
-
 
 /**
  * read and parse text file to Int3*
