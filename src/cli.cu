@@ -134,7 +134,8 @@ int main(int argc, char **argv) {
 		print_args(args);
 
 	// 3. perform algorithm
-	symspell_perform(args, seq1, &output);
+	// symspell_perform(args, seq1, &output);
+	symspell_perform_dummy(args, seq1, &output);
 
 	// 4. write output, if requested
 	if (args.outputPath != NULL) {
@@ -144,12 +145,14 @@ int main(int argc, char **argv) {
 	}
 
 	// 5. check output, if requested
-	// if (args.checkOutput) {
-	// 	std::unordered_set<Int3> answer = pairwise_distance(seq1, args.seq1Len, args.distance);
-	// 	int success = check_intput(answer, output);
-	// 	if (!success)
-	// 		print_err("input checking failed");
-	// }
+	if (args.checkOutput) {
+		auto answer = pairwise_distance(seq1, args.seq1Len, args.distance);
+		int success = check_intput(answer, output);
+		if (success)
+			printf("output is verrified to be correct\n");
+		else
+			print_err("input checking failed");
+	}
 
 	// 6. clean up
 	cudaFree(seq1);
