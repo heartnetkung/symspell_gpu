@@ -1,3 +1,6 @@
+#ifndef CODEC_DEF
+#define CODEC_DEF
+
 #include "util.cu"
 #include <string.h>
 
@@ -135,3 +138,5 @@ Int3 remove_char(Int3 binary, int position) {
 	}//default do nothing
 	return ans;
 }
+
+#endif

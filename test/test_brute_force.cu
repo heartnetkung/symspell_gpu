@@ -1,5 +1,4 @@
 #include "test_util.cu"
-#include "../src/codec.cu"
 #include "../src/brute_force.cu"
 
 TEST(levenshtein, {

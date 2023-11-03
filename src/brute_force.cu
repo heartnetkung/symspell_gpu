@@ -1,5 +1,5 @@
 #include <unordered_set>
-#include "symspell.h"
+#include "codec.cu"
 
 struct Triplet {
     int x, y, z;

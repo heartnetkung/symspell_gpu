@@ -1,6 +1,3 @@
-#ifndef SYMSPELL_H
-#define SYMSPELL_H
-
 #include <stdint.h>
 
 const int MAX_INPUT_LENGTH = 18;
@@ -36,5 +33,3 @@ enum ReturnCode {SUCCESS, ERROR, EXIT};
 
 int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output);
 void symspell_free(SymspellOutput* output);
-
-#endif
