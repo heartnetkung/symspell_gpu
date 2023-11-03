@@ -1,7 +1,6 @@
 #include "test_util.cu"
 #include "../src/generate_combination.cu"
 
-
 TEST(test_generate_combination, {
 	char input[] = "CDEFG";
 	int distance = 2;
