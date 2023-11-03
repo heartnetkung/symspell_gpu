@@ -1,42 +1,36 @@
 #include <cub/device/device_scan.cuh>
-#include "../src/codec.cu"
+#include <cub/device/device_merge_sort.cuh>
+#include "codec.cu"
 
-__global__
-void to_len(Int3* input, int distance, int* output, int n) {
-	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-	if (tid >= n)
-		return;
-
-	int len = len_decode(input[tid]);
-	int newValue = 1 + len;
-	switch (distance < len ? distance : len) {
-	case 4:
-		newValue += len * (len - 1) * (len - 2) * (len - 3) / 24;
-	case 3:
-		newValue += len * (len - 1) * (len - 2) / 6;
-	case 2:
-		newValue += len * (len - 1) / 2;
+struct Int3Comparator {
+	CUB_RUNTIME_FUNCTION __forceinline__ __device__
+	bool operator()(const Int3 &lhs, const Int3 &rhs) {
+		unint32_t temp;
+		temp = lhs.entry[0] - rhs.entry[0];
+		if (temp != 0)
+			return temp;
+		temp = lhs.entry[1] - rhs.entry[1];
+		if (temp != 0)
+			return temp;
+		return lhs.entry[2] - rhs.entry[2];
 	}
-	output[tid] = newValue;
+};
+
+void inclusive_sum(int* input, int* output, int n) {
+	void *buffer = NULL;
+	size_t bufferSize = 0;
+	cub::DeviceScan::InclusiveSum(buffer, bufferSize, input, output, n);
+	cudaMalloc(&buffer, bufferSize);
+	cub::DeviceScan::InclusiveSum(buffer, bufferSize, input, output, n);
+	cudaFree(buffer);
 }
 
-void cal_combination_offset(Int3* input, int distance, int* output, int n) {
-	int* lens;
-	cudaMalloc(&lens, sizeof(int)*n);
-
-	int blockSize = 256;
-	int numBlocks = (n + blockSize - 1) / blockSize;
-	to_len <<< numBlocks, blockSize>>>(input, distance, lens, n);
-
-	void *d_temp_storage = NULL;
-	size_t temp_storage_bytes = 0;
-	cub::DeviceScan::InclusiveSum(
-	    d_temp_storage, temp_storage_bytes, lens, output, n);
-
-	cudaMalloc(&d_temp_storage, temp_storage_bytes);
-	cub::DeviceScan::InclusiveSum(
-	    d_temp_storage, temp_storage_bytes, lens, output, n);
-
-	cudaFree(d_temp_storage);
-	cudaFree(lens);
+void sort_pairs(Int3* keys, int* values, int n) {
+	void *buffer = NULL;
+	size_t bufferSize = 0;
+	Int3Comparator op;
+	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
+	cudaMalloc(&buffer, bufferSize);
+	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
+	cudaFree(buffer);
 }
