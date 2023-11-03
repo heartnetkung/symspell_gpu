@@ -78,7 +78,7 @@ __device__ __host__
 int len_decode(Int3 binary) {
 	int ans = 18;
 	int lastIndex = 2;
-	uint32_t* entry = binary.entry;
+	unsigned int* entry = binary.entry;
 	if (entry[2] == 0) {
 		ans -= 6;
 		lastIndex = 1;
@@ -102,9 +102,9 @@ int len_decode(Int3 binary) {
 __device__ __host__
 Int3 remove_char(Int3 binary, int position) {
 	Int3 ans;
-	uint32_t* ansEntry = ans.entry;
-	uint32_t* binEntry = binary.entry;
-	uint32_t b2 = binEntry[2], b1 = binEntry[1], b0 = binEntry[0];
+	unsigned int* ansEntry = ans.entry;
+	unsigned int* binEntry = binary.entry;
+	unsigned int b2 = binEntry[2], b1 = binEntry[1], b0 = binEntry[0];
 
 	// approximate shift
 	ansEntry[2] = b2 << 5;

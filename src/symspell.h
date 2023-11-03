@@ -1,15 +1,13 @@
-#include <stdint.h>
-
 const int MAX_INPUT_LENGTH = 18;
 // up to 3060? or 816?
 const int MAX_DISTANCE = 4;
 
 struct Int3 {
-	uint32_t entry[3] = {0L, 0L, 0L};
+	unsigned int entry[3] = {0L, 0L, 0L};
 };
 
 struct Int2 {
-	uint32_t x = 0L, y = 0L;
+	unsigned int x = 0L, y = 0L;
 };
 
 struct SymspellArgs {
