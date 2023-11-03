@@ -35,22 +35,25 @@ TEST(sort_pairs, {
 	char keys[inputLen][3] = {"AC", "AC", "A", "AC"};
 	Int3* keys2;
 	int* values;
+	char expectedKeys[inputLen][3] = {"A", "AC", "AC", "AC"};
+	int expectedValues[] = {5, 7, 6, 4};
 
 	cudaMallocManaged(&keys2, sizeof(int)*inputLen);
 	cudaMallocManaged(&values, sizeof(int)*inputLen);
 
 	for (int i = 0; i < inputLen; i++) {
-		input2[i] = str_encode(input[i]);
-		values[i] = i;
+		keys2[i] = str_encode(keys[i]);
+		values[i] = 7-i;
 	}
 
 	sort_pairs(keys2, values, inputLen);
 
 	cudaDeviceSynchronize();
-	print_int3(keys2, inputLen, ' ');
-	for (int i = 0; i < inputLen; i++)
-		printf("%d ", values);
+	for (int i = 0; i < inputLen; i++) {
+		checkstr(str_decode(keys2[i]), expectedKeys[i]);
+		check(values[i] == expectedValues[i]);
+	}
 
-	cudaFree(input2);
-	cudaFree(input3);
+	cudaFree(keys2);
+	cudaFree(values);
 })

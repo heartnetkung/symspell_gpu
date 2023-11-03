@@ -5,14 +5,11 @@
 struct Int3Comparator {
 	CUB_RUNTIME_FUNCTION __forceinline__ __device__
 	bool operator()(const Int3 &lhs, const Int3 &rhs) {
-		unint32_t temp;
-		temp = lhs.entry[0] - rhs.entry[0];
-		if (temp != 0)
-			return temp;
-		temp = lhs.entry[1] - rhs.entry[1];
-		if (temp != 0)
-			return temp;
-		return lhs.entry[2] - rhs.entry[2];
+		if (lhs.entry[0] != rhs.entry[0])
+			return lhs.entry[0] < rhs.entry[0];
+		if (lhs.entry[1] != rhs.entry[1])
+			return lhs.entry[0] < rhs.entry[0];
+		return lhs.entry[2] < rhs.entry[2];
 	}
 };
 
