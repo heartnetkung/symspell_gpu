@@ -7,3 +7,4 @@ add_executable(symspell_gpu src/cli.cu)
 # test cases
 add_executable(test_codec test/test_codec.cu)
 add_executable(test_brute_force test/test_brute_force.cu)
+add_executable(test_generate_combination test/test_generate_combination.cu)
