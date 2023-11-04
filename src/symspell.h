@@ -3,7 +3,7 @@ const int MAX_INPUT_LENGTH = 18;
 const int MAX_DISTANCE = 4;
 
 struct Int3 {
-	unsigned int entry[3] = {0L, 0L, 0L};
+	unsigned int entry[3] = {0, 0, 0};
 	__device__
 	bool operator==(const Int3& t) const {
 		return (entry[0] == t.entry[0]) && (entry[1] == t.entry[1]) && (entry[2] == t.entry[2]);
@@ -11,7 +11,7 @@ struct Int3 {
 };
 
 struct Int2 {
-	unsigned int x = 0L, y = 0L;
+	int x = 0, y = 0;
 	__device__
 	bool operator==(const Int2& t) const {
 		return (x == t.x) && (y == t.y);

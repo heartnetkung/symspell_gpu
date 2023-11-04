@@ -135,3 +135,37 @@ TEST(unique_pairs, {
 
 	_cudaFree(input, input2, output, outputLen);
 })
+
+
+TEST(double_flag, {
+	int inputLen = 3;
+	Int2 * input1, *output1;
+	char* input2, *flags, *output2;
+	int* outputLen;
+
+	cudaMallocManaged(&input1, sizeof(Int2)*inputLen);
+	cudaMallocManaged(&output1, sizeof(Int2)*inputLen);
+	cudaMallocManaged(&input2, sizeof(char)*inputLen);
+	cudaMallocManaged(&flags, sizeof(char)*inputLen);
+	cudaMallocManaged(&output2, sizeof(char)*inputLen);
+	cudaMallocManaged(&outputLen, sizeof(int));
+	for (int i = 0; i < inputLen; i++) {
+		Int2 x = {.x = i, .y = i};
+		input1[i] = x;
+		input2[i] = i;
+		flags[i] = (i % 2) == 0;
+	}
+
+	double_flag(input1, input2, flags, output1, output2, outputLen, inputLen);
+
+	cudaDeviceSynchronize();
+	check(outputLen[0] == 2);
+	check(output1[0].x == 0);
+	check(output1[0].y == 0);
+	check(output2[0] == 0);
+	check(output1[1].x == 2);
+	check(output1[1].y == 2);
+	check(output2[1] == 2);
+
+	_cudaFree(input1, output1, input2, flags, output2, outputLen);
+})
