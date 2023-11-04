@@ -5,7 +5,6 @@ __host__
 #endif
 __device__
 void printStack(int* indexStack, int length) {
-	//TODO handle seqStack
 	for (int i = 1; i <= length; i++)
 		printf("%d ", indexStack[i]);
 	printf(">>%d\n", length);
