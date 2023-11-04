@@ -2,6 +2,15 @@
 #include "../src/cub.cu"
 #include "../src/kernel.cu"
 
+void init(char** keys, Int3* keys2, int* values, int n) {
+	cudaMallocManaged(&keys2, sizeof(Int3)*n);
+	cudaMallocManaged(&values, sizeof(int)*n);
+	for (int i = 0; i < inputLen; i++) {
+		keys2[i] = str_encode(keys[i]);
+		values[i] = i;
+	}
+}
+
 TEST(cal_combination_offset, {
 	int inputLen = 4;
 	char input[inputLen][7] = {"AC", "ACCC", "ACDEFG", "A"};
@@ -30,23 +39,16 @@ TEST(cal_combination_offset, {
 	cudaFree(output);
 })
 
-TEST(sort_pairs, {
+TEST(sort_key_values, {
 	int inputLen = 4;
 	char keys[inputLen][3] = {"AC", "AC", "A", "AC"};
 	Int3* keys2;
 	int* values;
 	char expectedKeys[inputLen][3] = {"A", "AC", "AC", "AC"};
 	int expectedValues[] = {5, 7, 6, 4};
+	init(keys, keys2, values, inputLen);
 
-	cudaMallocManaged(&keys2, sizeof(int)*inputLen);
-	cudaMallocManaged(&values, sizeof(int)*inputLen);
-
-	for (int i = 0; i < inputLen; i++) {
-		keys2[i] = str_encode(keys[i]);
-		values[i] = 7-i;
-	}
-
-	sort_pairs(keys2, values, inputLen);
+	sort_key_values(keys2, values, inputLen);
 
 	cudaDeviceSynchronize();
 	for (int i = 0; i < inputLen; i++) {

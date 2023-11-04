@@ -13,6 +13,15 @@ struct Int3Comparator {
 	}
 };
 
+struct Int2Comparator {
+	CUB_RUNTIME_FUNCTION __forceinline__ __device__
+	bool operator()(const Int2 &lhs, const Int2 &rhs) {
+		if (lhs.x != rhs.x)
+			return lhs.x < rhs.x;
+		return lhs.y < rhs.y;
+	}
+};
+
 void inclusive_sum(int* input, int* output, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
@@ -22,7 +31,7 @@ void inclusive_sum(int* input, int* output, int n) {
 	cudaFree(buffer);
 }
 
-void sort_pairs(Int3* keys, int* values, int n) {
+void sort_key_values(Int3* keys, int* values, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
 	Int3Comparator op;
