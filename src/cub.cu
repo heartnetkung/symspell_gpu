@@ -24,17 +24,6 @@ struct Int2Comparator {
 	}
 };
 
-struct Int3LTE {
-	int value;
-	CUB_RUNTIME_FUNCTION __forceinline__
-	Int3LTE(int value) : value(value) {}
-
-	CUB_RUNTIME_FUNCTION __forceinline__ __device__
-	bool operator()(const Int3 &a) const {
-		return a.entry[2] <= value;
-	}
-};
-
 void inclusive_sum(int* input, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
@@ -87,12 +76,12 @@ void unique(Int2* input, Int2* output, int* outputLen, int n) {
 	cudaFree(buffer);
 }
 
-void filter_distance(Int3* input, int distance, Int3* output, int* outputLen, int n) {
-	Int3LTE op(distance);
+void double_flag(Int2* input1, char* input2, char* flags, Int2* output1, char* output2, int* outputLen, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
-	cub::DeviceSelect::If(buffer, bufferSize, input, output, outputLen, n, op);
+	cub::DeviceSelect::Flagged(buffer, bufferSize, input1, flags, output1, outputLen, n);
 	cudaMalloc(&buffer, bufferSize);
-	cub::DeviceSelect::If(buffer, bufferSize, input, output, outputLen, n, op);
+	cub::DeviceSelect::Flagged(buffer, bufferSize, input1, flags, output1, outputLen, n);
+	cub::DeviceSelect::Flagged(buffer, bufferSize, input2, flags, output2, outputLen, n);
 	cudaFree(buffer);
 }
