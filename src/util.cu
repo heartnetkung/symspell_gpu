@@ -29,3 +29,45 @@ void print_int_arr(int* arr, int n) {
 		printf("%d ", arr[i]);
 	printf("\n");
 }
+
+void _cudaFree(void* a) {
+	cudaFree(a);
+}
+void _cudaFree(void* a, void* b) {
+	cudaFree(a);
+	cudaFree(b);
+}
+void _cudaFree(void* a, void* b, void* c) {
+	cudaFree(a);
+	cudaFree(b);
+	cudaFree(c);
+}
+void _cudaFree(void* a, void* b, void* c, void* d) {
+	cudaFree(a);
+	cudaFree(b);
+	cudaFree(c);
+	cudaFree(d);
+}
+void _cudaFree(void* a, void* b, void* c, void* d, void* e) {
+	cudaFree(a);
+	cudaFree(b);
+	cudaFree(c);
+	cudaFree(d);
+	cudaFree(e);
+}
+void _cudaFree(void* a, void* b, void* c, void* d, void* e, void* f) {
+	cudaFree(a);
+	cudaFree(b);
+	cudaFree(c);
+	cudaFree(d);
+	cudaFree(e);
+	cudaFree(f);
+}
+void _cudaFree(void* a, void* b, void* c, void* d, void* e, void* f, void* g) {
+	cudaFree(a);
+	cudaFree(b);
+	cudaFree(c);
+	cudaFree(d);
+	cudaFree(e);
+	cudaFree(g);
+}
