@@ -4,14 +4,13 @@ project(SymspellGPU VERSION 0.0.1 LANGUAGES CXX CUDA)
 
 option(BUILD_CUB "Build with cub library" OFF)
 
-add_executable(symspell_gpu src/cli.cu)
+if(NOT BUILD_CUB)
+	add_executable(symspell_gpu src/cli.cu)
 
-# test cases
-add_executable(test_codec test/test_codec.cu)
-add_executable(test_brute_force test/test_brute_force.cu)
-add_executable(test_generate_combination test/test_generate_combination.cu)
-
+	add_executable(test_codec test/test_codec.cu)
+	add_executable(test_brute_force test/test_brute_force.cu)
+	add_executable(test_generate_combination test/test_generate_combination.cu)
 # cub test cases
-if(BUILD_CUB)
+else()
 	add_executable(test_cub test/test_cub.cu)
 endif(BUILD_CUB)
