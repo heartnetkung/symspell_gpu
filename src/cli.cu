@@ -134,8 +134,8 @@ int main(int argc, char **argv) {
 		print_args(args);
 
 	// 3. perform algorithm
-	// symspell_perform(args, seq1, &output);
-	symspell_perform_dummy(args, seq1, &output);
+	symspell_perform(args, seq1, &output);
+	// symspell_perform_dummy(args, seq1, &output);
 
 	// 4. write output, if requested
 	if (args.outputPath != NULL) {
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
 	}
 
 	// 6. clean up
-	cudaFree(seq1);
+	cudaFreeHost(seq1);
 	symspell_free(&output);
 	if (args.verbose)
 		printf("success\n");
