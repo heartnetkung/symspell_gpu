@@ -111,7 +111,7 @@ TEST(unique_pairs, {
 	int inputLen = 5;
 	Int2 * input, *input2, *output;
 	int* outputLen;
-	// Int2 expectedPairs[6];
+	Int2 expectedPairs[] = {{.x = 0, .y = 1}, {.x = 0, .y = 2}, {.x = 1, .y = 2}};
 
 	cudaMallocManaged(&input, sizeof(Int2)*inputLen);
 	cudaMallocManaged(&input2, sizeof(Int2)*inputLen);
@@ -124,10 +124,14 @@ TEST(unique_pairs, {
 	input[4] = {.x = 0, .y = 1};
 
 	sort_int2(input, inputLen);
-	unique(input, output, outputLen, inputLen)
+	unique(input, output, outputLen, inputLen);
 
 	cudaDeviceSynchronize();
-	print_int2_arr(output, outputLen[0]);
+	check(outputLen[0] == 3);
+	for (int i = 0; i < outputLen[0]; i++) {
+		check(output[i].x == expectedPairs[i].x);
+		check(output[i].y == expectedPairs[i].y);
+	}
 
 	_cudaFree(input, input2, output, outputLen);
 })

@@ -27,7 +27,7 @@ struct Int2Comparator {
 struct Int3LTE {
 	int value;
 	CUB_RUNTIME_FUNCTION __forceinline__
-	LessThan(int value) : value(value) {}
+	Int3LTE(int value) : value(value) {}
 
 	CUB_RUNTIME_FUNCTION __forceinline__ __device__
 	bool operator()(const Int3 &a) const {
