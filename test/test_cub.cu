@@ -58,11 +58,20 @@ TEST(generate_pairs, {
 		"C", "C", "C", "C"
 	};
 	Int3* keys2;
-	int* values;
-	int* valueOffsets;
-	int* pairOffsets;
-	int* nUnique;
+	int *values, *valueOffsets, *pairOffsets, *nUnique;
 	Int2* pairs;
+	int expectedValueOffsets[] = {3, 4, 8};
+	int expectedPairOffsets[] = {3, 3, 9};
+	Int2 expectedPairs[9];
+	expectedPairs[0] = {.x = 0, .y = 1};
+	expectedPairs[1] = {.x = 0, .y = 2};
+	expectedPairs[2] = {.x = 1, .y = 2};
+	expectedPairs[3] = {.x = 4, .y = 5};
+	expectedPairs[4] = {.x = 4, .y = 6};
+	expectedPairs[5] = {.x = 4, .y = 7};
+	expectedPairs[6] = {.x = 5, .y = 6};
+	expectedPairs[7] = {.x = 5, .y = 7};
+	expectedPairs[8] = {.x = 6, .y = 7};
 
 	cudaMallocManaged(&keys2, sizeof(Int3)*inputLen);
 	cudaMallocManaged(&values, sizeof(int)*inputLen);
@@ -73,7 +82,6 @@ TEST(generate_pairs, {
 		values[i] = i;
 	}
 
-
 	unique_counts(keys2, valueOffsets, nUnique, inputLen);
 	cudaDeviceSynchronize();
 
@@ -83,11 +91,18 @@ TEST(generate_pairs, {
 	inclusive_sum(pairOffsets, nUnique[0]);
 
 	int pairLength = transfer_last_element(pairOffsets, nUnique[0]);
-	cudaMallocManaged(&pairs, sizeof(int)*pairLength);
+	cudaMallocManaged(&pairs, sizeof(Int2)*pairLength);
+	generate_pairs <<< nUnique[0], 1>>>(values, pairs, valueOffsets, pairOffsets, nUnique[0]);
 
 	cudaDeviceSynchronize();
-	print_int_arr(valueOffsets, nUnique[0]);
-	print_int_arr(pairOffsets, nUnique[0]);
+	for (int i = 0; i < nUnique[0]; i++) {
+		check(valueOffsets[i] == expectedValueOffsets[i]);
+		check(pairOffsets[i] == expectedPairOffsets[i]);
+	}
+	for(int i=0;i<pairLength;i++){
+		check(pairs[i].x == expectedPairs[i].x);
+		check(pairs[i].y == expectedPairs[i].y);
+	}
 
 	_cudaFree(keys2, values, valueOffsets, nUnique, pairs, pairOffsets);
 })
