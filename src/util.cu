@@ -30,6 +30,12 @@ void print_int_arr(int* arr, int n) {
 	printf("\n");
 }
 
+void print_char_arr(char* arr, int n) {
+	for (int i = 0; i < n; i++)
+		printf("%d ", arr[i]);
+	printf("\n");
+}
+
 void print_int2_arr(Int2* arr, int n) {
 	for (int i = 0; i < n; i++)
 		printf("(%d,%d) ", arr[i].x, arr[i].y);
