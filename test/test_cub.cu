@@ -22,8 +22,7 @@ TEST(cal_combination_offset, {
 	for (int i = 0; i < inputLen; i++)
 		check(expected[i] == output[i]);
 
-	cudaFree(input2);
-	cudaFree(output);
+	_cudaFree(input2, output);
 })
 
 TEST(sort_key_values, {
@@ -49,21 +48,21 @@ TEST(sort_key_values, {
 		check(values[i] == expectedValues[i]);
 	}
 
-	cudaFree(keys2);
-	cudaFree(values);
+	_cudaFree(keys2, values);
 })
 
 TEST(generate_pairs, {
 	int inputLen = 8;
 	char keys[inputLen][3] = {
 		"AC", "AC", "AC", "A",
-		"C", "C", "B", "B"
+		"C", "C", "C", "C"
 	};
 	Int3* keys2;
 	int* values;
 	int* valueOffsets;
 	int* pairOffsets;
 	int* nUnique;
+	Int2* pairs;
 
 	cudaMallocManaged(&keys2, sizeof(Int3)*inputLen);
 	cudaMallocManaged(&values, sizeof(int)*inputLen);
@@ -79,17 +78,16 @@ TEST(generate_pairs, {
 	cudaDeviceSynchronize();
 
 	cudaMallocManaged(&pairOffsets, sizeof(int)*nUnique[0]);
-	cal_pair_len(valueOffsets, pairOffsets);
+	cal_pair_len <<< nUnique[0], 1>>>(valueOffsets, pairOffsets, nUnique[0]);
 	inclusive_sum(valueOffsets, nUnique[0]);
 	inclusive_sum(pairOffsets, nUnique[0]);
+
+	int pairLength = transfer_last_element(pairOffsets, nUnique[0]);
+	cudaMallocManaged(&pairs, sizeof(int)*pairLength);
 
 	cudaDeviceSynchronize();
 	print_int_arr(valueOffsets, nUnique[0]);
 	print_int_arr(pairOffsets, nUnique[0]);
 
-	cudaFree(keys2);
-	cudaFree(values);
-	cudaFree(valueOffsets);
-	cudaFree(nUnique);
-	// cudaFree(pairOffsets);
+	_cudaFree(keys2, values, valueOffsets, nUnique, pairs, pairOffsets);
 })
