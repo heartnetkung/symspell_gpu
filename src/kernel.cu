@@ -59,3 +59,38 @@ void generate_pairs(int* indexes, Int2* outputs, int* inputOffsets, int* outputO
 		}
 	}
 }
+
+__global__
+void cal_levenshtein(Int3* seq, Int2* index, int distance, char* distanceOutput, char* flagOutput, int n) {
+	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+	if (tid >= n)
+		return;
+
+	Int2 indexPair = index[tid];
+	char newOutput = levenshtein(seq[indexPair.x], seq[indexPair.y]);
+	distanceOutput[tid] = newOutput;
+	flagOutput[tid] =  newOutput <= distance;
+}
+
+#define MIN3(a, b, c) ((a) < (b) ? ((a) < (c) ? (a) : (c)) : ((b) < (c) ? (b) : (c)))
+
+__device__
+char levenshtein(Int3 x1, Int3 x2) {
+	char x, y, lastdiag, olddiag, c1, c2;
+	char s1[MAX_INPUT_LENGTH + 1] = str_decode(x1);
+	char s2[MAX_INPUT_LENGTH + 1] = str_decode(x2);
+	char s1len = (char)len_decode(x1), s2len = (char)len_decode(x2);
+	char column[MAX_INPUT_LENGTH + 1];
+
+	for (y = 1; y <= s1len; y++)
+		column[y] = y;
+	for (x = 1; x <= s2len; x++) {
+		column[0] = x;
+		for (y = 1, lastdiag = x - 1; y <= s1len; y++) {
+			olddiag = column[y];
+			column[y] = MIN3(column[y] + 1, column[y - 1] + 1, lastdiag + (s1[y - 1] == s2[x - 1] ? 0 : 1));
+			lastdiag = olddiag;
+		}
+	}
+	return column[s1len];
+}

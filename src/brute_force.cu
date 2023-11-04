@@ -23,10 +23,10 @@ struct TripletHasher {
 #define MIN3(a, b, c) ((a) < (b) ? ((a) < (c) ? (a) : (c)) : ((b) < (c) ? (b) : (c)))
 
 int levenshtein(char *s1, char *s2) {
-    unsigned int s1len, s2len, x, y, lastdiag, olddiag;
+    int s1len, s2len, x, y, lastdiag, olddiag;
     s1len = strlen(s1);
     s2len = strlen(s2);
-    unsigned int column[s1len + 1];
+    int column[s1len + 1];
     for (y = 1; y <= s1len; y++)
         column[y] = y;
     for (x = 1; x <= s2len; x++) {
