@@ -54,7 +54,6 @@ Int3 str_encode(char *str) {
 /**
  * decode binary form into peptide string
 */
-__device__ __host__
 char* str_decode(Int3 binary) {
 	char* ans = (char*) malloc((MAX_INPUT_LENGTH + 1) * sizeof(char));
 

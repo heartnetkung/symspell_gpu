@@ -60,27 +60,28 @@ void generate_pairs(int* indexes, Int2* outputs, int* inputOffsets, int* outputO
 	}
 }
 
-__global__
-void cal_levenshtein(Int3* seq, Int2* index, int distance, char* distanceOutput, char* flagOutput, int n) {
-	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-	if (tid >= n)
-		return;
-
-	Int2 indexPair = index[tid];
-	char newOutput = levenshtein(seq[indexPair.x], seq[indexPair.y]);
-	distanceOutput[tid] = newOutput;
-	flagOutput[tid] =  newOutput <= distance;
-}
-
 #define MIN3(a, b, c) ((a) < (b) ? ((a) < (c) ? (a) : (c)) : ((b) < (c) ? (b) : (c)))
 
 __device__
 char levenshtein(Int3 x1, Int3 x2) {
-	char x, y, lastdiag, olddiag, c1, c2;
-	char s1[MAX_INPUT_LENGTH + 1] = str_decode(x1);
-	char s2[MAX_INPUT_LENGTH + 1] = str_decode(x2);
+	char x, y, lastdiag, olddiag;
+	char s1[MAX_INPUT_LENGTH];
+	char s2[MAX_INPUT_LENGTH];
 	char s1len = (char)len_decode(x1), s2len = (char)len_decode(x2);
 	char column[MAX_INPUT_LENGTH + 1];
+
+	for (int i = 0; i < MAX_INPUT_LENGTH; i++) {
+		char c = (x1.entry[i / 6] >> (27 - 5 * (i % 6))) & 0x1F;
+		if (c == 0)
+			break;
+		s1[i] = BEFORE_A_CHAR + c;
+	}
+	for (int i = 0; i < MAX_INPUT_LENGTH; i++) {
+		char c = (x2.entry[i / 6] >> (27 - 5 * (i % 6))) & 0x1F;
+		if (c == 0)
+			break;
+		s2[i] = BEFORE_A_CHAR + c;
+	}
 
 	for (y = 1; y <= s1len; y++)
 		column[y] = y;
@@ -93,4 +94,16 @@ char levenshtein(Int3 x1, Int3 x2) {
 		}
 	}
 	return column[s1len];
+}
+
+__global__
+void cal_levenshtein(Int3* seq, Int2* index, int distance, char* distanceOutput, char* flagOutput, int n) {
+	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+	if (tid >= n)
+		return;
+
+	Int2 indexPair = index[tid];
+	char newOutput = levenshtein(seq[indexPair.x], seq[indexPair.y]);
+	distanceOutput[tid] = newOutput;
+	flagOutput[tid] =  newOutput <= distance;
 }
