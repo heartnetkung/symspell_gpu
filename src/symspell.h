@@ -8,6 +8,10 @@ struct Int3 {
 
 struct Int2 {
 	unsigned int x = 0L, y = 0L;
+	__device__
+	bool operator==(const Int2& t) const {
+        return (x == t.x) && (y == t.y);
+    }
 };
 
 struct SymspellArgs {

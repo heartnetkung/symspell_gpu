@@ -1,5 +1,6 @@
 #include <cub/device/device_scan.cuh>
 #include <cub/device/device_merge_sort.cuh>
+#include <cub/device/device_run_length_encode.cuh>
 #include "codec.cu"
 
 struct Int3Comparator {
@@ -45,10 +46,10 @@ void unique_counts(Int3* keys, int* output, int* nUnique, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
 	Int3* dummy;
+	cudaMalloc(&dummy, sizeof(Int3)*n);
 	cub::DeviceRunLengthEncode::Encode(
 	    buffer, bufferSize, keys, dummy, output, nUnique, n);
 	cudaMalloc(&buffer, bufferSize);
-	cudaMalloc(&dummy, sizeof(Int3)*n);
 	cub::DeviceRunLengthEncode::Encode(
 	    buffer, bufferSize, keys, dummy, output, nUnique, n);
 	cudaFree(buffer);
