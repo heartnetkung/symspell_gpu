@@ -40,3 +40,17 @@ void sort_key_values(Int3* keys, int* values, int n) {
 	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
 	cudaFree(buffer);
 }
+
+void unique_counts(Int3* keys, int* output, int* nUnique, int n) {
+	void *buffer = NULL;
+	size_t bufferSize = 0;
+	Int3* dummy;
+	cub::DeviceRunLengthEncode::Encode(
+	    buffer, bufferSize, keys, dummy, output, nUnique, n);
+	cudaMalloc(&buffer, bufferSize);
+	cudaMalloc(&dummy, sizeof(Int3)*n);
+	cub::DeviceRunLengthEncode::Encode(
+	    buffer, bufferSize, keys, dummy, output, nUnique, n);
+	cudaFree(buffer);
+	cudaFree(dummy);
+}
