@@ -31,7 +31,7 @@ struct SymspellArgs {
 
 struct SymspellOutput {
 	Int2* indexPairs = NULL;
-	int* pairwiseDistances = NULL;
+	char* pairwiseDistances = NULL;
 	int len = 0;
 };
 

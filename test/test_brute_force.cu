@@ -44,7 +44,7 @@ TEST(check_intput, {
 	indexPairs[3].x = 1; indexPairs[3].y = 3;
 	indexPairs[4].x = 1; indexPairs[4].y = 4;
 	indexPairs[5].x = 2; indexPairs[5].y = 3;
-	int pairwiseDistances[] = {2, 0, 1, 2, 2, 1};
+	char pairwiseDistances[] = {2, 0, 1, 2, 2, 1};
 	output.len = outputLen;
 	output.indexPairs = indexPairs;
 	output.pairwiseDistances = pairwiseDistances;
