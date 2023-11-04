@@ -13,4 +13,4 @@ if(NOT BUILD_CUB)
 # cub test cases
 else()
 	add_executable(test_cub test/test_cub.cu)
-endif(BUILD_CUB)
+endif(NOT BUILD_CUB)
