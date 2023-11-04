@@ -52,3 +52,44 @@ TEST(sort_key_values, {
 	cudaFree(keys2);
 	cudaFree(values);
 })
+
+TEST(generate_pairs, {
+	int inputLen = 8;
+	char keys[inputLen][3] = {
+		"AC", "AC", "AC", "A",
+		"C", "C", "B", "B"
+	};
+	Int3* keys2;
+	int* values;
+	int* valueOffsets;
+	int* pairOffsets;
+	int* nUnique;
+
+	cudaMallocManaged(&keys2, sizeof(Int3)*inputLen);
+	cudaMallocManaged(&values, sizeof(int)*inputLen);
+	cudaMallocManaged(&valueOffsets, sizeof(int)*inputLen);
+	cudaMallocManaged(&nUnique, sizeof(int));
+	for (int i = 0; i < inputLen; i++) {
+		keys2[i] = str_encode(keys[i]);
+		values[i] = i;
+	}
+
+
+	unique_counts(keys2, valueOffsets, nUnique, inputLen);
+	cudaDeviceSynchronize();
+
+	cudaMallocManaged(&pairOffsets, sizeof(int)*nUnique[0]);
+	cal_pair_len(valueOffsets, pairOffsets);
+	inclusive_sum(valueOffsets, nUnique[0]);
+	inclusive_sum(pairOffsets, nUnique[0]);
+
+	cudaDeviceSynchronize();
+	print_int_arr(valueOffsets, nUnique[0]);
+	print_int_arr(pairOffsets, nUnique[0]);
+
+	cudaFree(keys2);
+	cudaFree(values);
+	cudaFree(valueOffsets);
+	cudaFree(nUnique);
+	// cudaFree(pairOffsets);
+})
