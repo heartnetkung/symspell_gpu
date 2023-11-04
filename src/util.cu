@@ -23,3 +23,9 @@ void print_args(SymspellArgs args) {
 	printf("\tseq1Path: \"%s\"\n", args.seq1Path);
 	printf("}\n");
 }
+
+void print_int_arr(int* arr, int n) {
+	for (int i = 0; i < n; i++)
+		printf("%d ", arr[i]);
+	printf("\n");
+}
