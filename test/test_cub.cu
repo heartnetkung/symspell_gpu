@@ -99,10 +99,35 @@ TEST(generate_pairs, {
 		check(valueOffsets[i] == expectedValueOffsets[i]);
 		check(pairOffsets[i] == expectedPairOffsets[i]);
 	}
-	for(int i=0;i<pairLength;i++){
+	for (int i = 0; i < pairLength; i++) {
 		check(pairs[i].x == expectedPairs[i].x);
 		check(pairs[i].y == expectedPairs[i].y);
 	}
 
 	_cudaFree(keys2, values, valueOffsets, nUnique, pairs, pairOffsets);
+})
+
+TEST(unique_pairs, {
+	int inputLen = 5;
+	Int2 * input, *input2, *output;
+	int* outputLen;
+	// Int2 expectedPairs[6];
+
+	cudaMallocManaged(&input, sizeof(Int2)*inputLen);
+	cudaMallocManaged(&input2, sizeof(Int2)*inputLen);
+	cudaMallocManaged(&output, sizeof(Int2)*inputLen);
+	cudaMallocManaged(&outputLen, sizeof(int));
+	input[0] = {.x = 0, .y = 1};
+	input[1] = {.x = 0, .y = 2};
+	input[2] = {.x = 1, .y = 2};
+	input[3] = {.x = 0, .y = 1};
+	input[4] = {.x = 0, .y = 1};
+
+	sort_int2(input, inputLen);
+	unique(input, output, outputLen, inputLen)
+
+	cudaDeviceSynchronize();
+	print_int2_arr(output, outputLen[0]);
+
+	_cudaFree(input, input2, output, outputLen);
 })
