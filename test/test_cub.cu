@@ -2,40 +2,27 @@
 #include "../src/cub.cu"
 #include "../src/kernel.cu"
 
-void init(char** keys, Int3* keys2, int* values, int n) {
-	cudaMallocManaged(&keys2, sizeof(Int3)*n);
-	cudaMallocManaged(&values, sizeof(int)*n);
-	for (int i = 0; i < inputLen; i++) {
-		keys2[i] = str_encode(keys[i]);
-		values[i] = i;
-	}
-}
-
 TEST(cal_combination_offset, {
 	int inputLen = 4;
 	char input[inputLen][7] = {"AC", "ACCC", "ACDEFG", "A"};
 	Int3* input2;
-	int* input3;
 	int* output;
 	int distance = 2;
 	int expected[] = {4, 15, 37, 39};
 
 	cudaMallocManaged(&input2, sizeof(Int3)*inputLen);
-	cudaMallocManaged(&input3, sizeof(int)*inputLen);
 	cudaMallocManaged(&output, sizeof(int)*inputLen);
-
 	for (int i = 0; i < inputLen; i++)
 		input2[i] = str_encode(input[i]);
 
-	cal_combination_len <<< inputLen, 1>>>(input2, distance, input3, inputLen);
-	inclusive_sum(input3, output, inputLen);
+	cal_combination_len <<< inputLen, 1>>>(input2, distance, output, inputLen);
+	inclusive_sum(output, inputLen);
 
 	cudaDeviceSynchronize();
 	for (int i = 0; i < inputLen; i++)
 		check(expected[i] == output[i]);
 
 	cudaFree(input2);
-	cudaFree(input3);
 	cudaFree(output);
 })
 
@@ -45,8 +32,14 @@ TEST(sort_key_values, {
 	Int3* keys2;
 	int* values;
 	char expectedKeys[inputLen][3] = {"A", "AC", "AC", "AC"};
-	int expectedValues[] = {5, 7, 6, 4};
-	init(keys, keys2, values, inputLen);
+	int expectedValues[] = {2, 0, 1, 3};
+
+	cudaMallocManaged(&keys2, sizeof(Int3)*inputLen);
+	cudaMallocManaged(&values, sizeof(int)*inputLen);
+	for (int i = 0; i < inputLen; i++) {
+		keys2[i] = str_encode(keys[i]);
+		values[i] = i;
+	}
 
 	sort_key_values(keys2, values, inputLen);
 
