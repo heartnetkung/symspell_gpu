@@ -25,6 +25,7 @@ int gen_combinations(Int3* seq, int distance, Int3* &outputKeys, int* &outputVal
 	gen_combination <<< seq1LenBlocks, NUM_THREADS >>> (
 	    seq, combinationOffsets, distance, outputKeys, outputValues, n);
 
+	// cudaDeviceSynchronize();
 	cudaFree(combinationOffsets);
 	return outputLen;
 }
@@ -38,7 +39,7 @@ int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buff
 	unique_counts(inputKeys, valueOffsets, buffer, n);
 
 	// cal pairOffsets
-	int nUnique = transfer_last_element(buffer, 0);
+	int nUnique = transfer_last_element(buffer, 1);
 	int nUniqueBlock = (nUnique + NUM_THREADS) / NUM_THREADS;
 	cudaMalloc(&pairOffsets, sizeof(int)*nUnique);
 	cal_pair_len <<< nUniqueBlock, NUM_THREADS>>>(valueOffsets, pairOffsets, nUnique);
@@ -50,11 +51,13 @@ int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buff
 	cudaMalloc(&output, sizeof(Int2)*outputLen);
 	generate_pairs <<< nUniqueBlock, NUM_THREADS>>>(inputValues, output, valueOffsets, pairOffsets, nUnique);
 
+	// cudaDeviceSynchronize();
 	_cudaFree(valueOffsets, pairOffsets);
 	return outputLen;
 }
 
-int postprocessing(Int3* seq, Int2* input, int distance, Int2* &pairOutput, char* &distanceOutput, int n, int* buffer) {
+int postprocessing(Int3* seq, Int2* input, int distance,
+                   Int2* &pairOutput, char* &distanceOutput, int n, int* buffer) {
 	Int2* uniquePairs;
 	char* uniqueDistances, *flags;
 
@@ -64,19 +67,22 @@ int postprocessing(Int3* seq, Int2* input, int distance, Int2* &pairOutput, char
 	unique(input, uniquePairs, buffer, n);
 
 	// cal levenshtein
-	int uniqueLen = transfer_last_element(buffer, 0);
+	int uniqueLen = transfer_last_element(buffer, 1);
 	int byteRequirement = sizeof(char) * uniqueLen;
 	int uniqueLenBlock = (uniqueLen + NUM_THREADS) / NUM_THREADS;
 	cudaMalloc(&flags, byteRequirement);
 	cudaMalloc(&uniqueDistances, byteRequirement);
 	cudaMalloc(&distanceOutput, byteRequirement);
+	cudaMalloc(&pairOutput, sizeof(Int2)*uniqueLen);
 	cal_levenshtein <<< uniqueLenBlock, NUM_THREADS>>>(seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen);
 
 	//filter levenshtein
 	double_flag(uniquePairs, uniqueDistances, flags, pairOutput, distanceOutput, buffer, uniqueLen);
 
+	// int outputLen =  transfer_last_element(buffer, 1);
 	_cudaFree(uniquePairs, uniqueDistances, flags);
-	return transfer_last_element(buffer, 0);
+	// return outputLen;
+	return transfer_last_element(buffer, 1);
 }
 
 int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
@@ -133,18 +139,18 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	int pairBytes = sizeof(Int2) * outputLen;
 	cudaMallocHost(&output->indexPairs, pairBytes);
-	cudaMemcpy(outputPairs, output->indexPairs, pairBytes, cudaMemcpyDeviceToHost);
+	cudaMemcpy(output->indexPairs, outputPairs, pairBytes, cudaMemcpyDeviceToHost);
 
 	int distanceBytes = sizeof(char) * outputLen;
 	cudaMallocHost(&output->pairwiseDistances, distanceBytes);
-	cudaMemcpy(outputDistances, output->pairwiseDistances, distanceBytes, cudaMemcpyDeviceToHost);
+	cudaMemcpy(output->pairwiseDistances, outputDistances, distanceBytes, cudaMemcpyDeviceToHost);
 
 	output->len = outputLen;
 
 	if (verbose)
 		printf("step 5 completed\n");
 
-	cudaDeviceSynchronize();
+	// cudaDeviceSynchronize();
 	_cudaFree(deviceInt, seq1Device, combinationKeys, combinationValues, pairs, outputPairs, outputDistances);
 	return 0;
 }

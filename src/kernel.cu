@@ -103,6 +103,11 @@ void cal_levenshtein(Int3* seq, Int2* index, int distance, char* distanceOutput,
 		return;
 
 	Int2 indexPair = index[tid];
+	if (indexPair.x == indexPair.y) {
+		flagOutput[tid] =  0;
+		return;
+	}
+
 	char newOutput = levenshtein(seq[indexPair.x], seq[indexPair.y]);
 	distanceOutput[tid] = newOutput;
 	flagOutput[tid] =  newOutput <= distance;
