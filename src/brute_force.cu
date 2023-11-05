@@ -77,23 +77,3 @@ int check_intput(std::unordered_set<Triplet, TripletHasher> answer, SymspellOutp
 
     return 1;
 }
-
-int symspell_perform_dummy(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
-    auto raw_ans = pairwise_distance(seq1, args.seq1Len, args.distance);
-    int length = raw_ans.size();
-    Int2* indexPairs = (Int2*) malloc(length * sizeof(Int2));
-    char* pairwiseDistances = (char*) malloc(length * sizeof(char));
-
-    int i = 0;
-    for (auto iter = raw_ans.begin(); iter != raw_ans.end(); ++iter) {
-        indexPairs[i].x = (*iter).x;
-        indexPairs[i].y = (*iter).y;
-        pairwiseDistances[i] = (*iter).z;
-        i++;
-    }
-
-    output->len = length;
-    output->indexPairs = indexPairs;
-    output->pairwiseDistances = pairwiseDistances;
-    return 0;
-}

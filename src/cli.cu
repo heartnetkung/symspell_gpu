@@ -80,7 +80,7 @@ int parse_file(char* path, Int3* result, int len) {
 		if (newInt3.entry[0] == 0) {
 			fclose(file);
 			char msg[100];
-			sprintf(msg, "parsing error at line: %d", lineNumber);
+			sprintf(msg, "parsing error at line: %d (only upper-cased amino acids with max length of %d are allowed)", lineNumber, MAX_INPUT_LENGTH);
 			return print_err(msg);
 		}
 
@@ -135,7 +135,6 @@ int main(int argc, char **argv) {
 
 	// 3. perform algorithm
 	symspell_perform(args, seq1, &output);
-	// symspell_perform_dummy(args, seq1, &output);
 
 	// 4. write output, if requested
 	if (args.outputPath != NULL) {
