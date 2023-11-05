@@ -8,9 +8,9 @@
 
 const int NUM_THREADS = 256;
 
-int gen_combinations(Int3* seq, int distance, Int3* outputKeys, int* outputValues, int n) {
+int gen_combinations(Int3* seq, int distance, Int3* &outputKeys, int* &outputValues, int n) {
 	int *combinationOffsets;
-	int seq1LenBlocks = (int)ceil(n / NUM_THREADS);
+	int seq1LenBlocks = (n + NUM_THREADS) / NUM_THREADS;
 
 	// cal combinationOffsets
 	cudaMalloc((void**)&combinationOffsets, sizeof(int)*n);
@@ -20,8 +20,8 @@ int gen_combinations(Int3* seq, int distance, Int3* outputKeys, int* outputValue
 	int outputLen = transfer_last_element(combinationOffsets, n);
 
 	// generate combinations
-	cudaMalloc((void**)&outputKeys, sizeof(Int3)*outputLen);
-	cudaMalloc((void**)&outputValues, sizeof(int)*outputLen);
+	cudaMalloc(&outputKeys, sizeof(Int3)*outputLen);
+	cudaMalloc(&outputValues, sizeof(int)*outputLen);
 	gen_combination <<< seq1LenBlocks, NUM_THREADS >>> (
 	    seq, combinationOffsets, distance, outputKeys, outputValues, n);
 
@@ -29,7 +29,7 @@ int gen_combinations(Int3* seq, int distance, Int3* outputKeys, int* outputValue
 	return outputLen;
 }
 
-int gen_pairs(Int3* inputKeys, int* inputValues, Int2* output, int n, int* buffer) {
+int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buffer) {
 	int* valueOffsets, *pairOffsets;
 
 	// cal valueOffsets
@@ -39,7 +39,7 @@ int gen_pairs(Int3* inputKeys, int* inputValues, Int2* output, int n, int* buffe
 
 	// cal pairOffsets
 	int nUnique = transfer_last_element(buffer, 0);
-	int nUniqueBlock = (int)ceil(n / NUM_THREADS);
+	int nUniqueBlock = (nUnique + NUM_THREADS) / NUM_THREADS;
 	cudaMalloc(&pairOffsets, sizeof(int)*nUnique);
 	cal_pair_len <<< nUniqueBlock, NUM_THREADS>>>(valueOffsets, pairOffsets, nUnique);
 	inclusive_sum(valueOffsets, nUnique);
@@ -47,14 +47,14 @@ int gen_pairs(Int3* inputKeys, int* inputValues, Int2* output, int n, int* buffe
 
 	// generate pairs
 	int outputLen = transfer_last_element(pairOffsets, nUnique);
-	cudaMallocManaged(&output, sizeof(Int2)*outputLen);
-	generate_pairs <<< nUniqueBlock, NUM_THREADS>>>(values, output, valueOffsets, pairOffsets, nUnique);
+	cudaMalloc(&output, sizeof(Int2)*outputLen);
+	generate_pairs <<< nUniqueBlock, NUM_THREADS>>>(inputValues, output, valueOffsets, pairOffsets, nUnique);
 
 	_cudaFree(valueOffsets, pairOffsets);
 	return outputLen;
 }
 
-int postprocessing(Int3* seq, Int2* input, int distance, Int2* pairOutput, char* distanceOutput, int n, int* buffer) {
+int postprocessing(Int3* seq, Int2* input, int distance, Int2* &pairOutput, char* &distanceOutput, int n, int* buffer) {
 	Int2* uniquePairs;
 	char* uniqueDistances, *flags;
 
@@ -66,10 +66,11 @@ int postprocessing(Int3* seq, Int2* input, int distance, Int2* pairOutput, char*
 	// cal levenshtein
 	int uniqueLen = transfer_last_element(buffer, 0);
 	int byteRequirement = sizeof(char) * uniqueLen;
+	int uniqueLenBlock = (uniqueLen + NUM_THREADS) / NUM_THREADS;
 	cudaMalloc(&flags, byteRequirement);
 	cudaMalloc(&uniqueDistances, byteRequirement);
 	cudaMalloc(&distanceOutput, byteRequirement);
-	cal_levenshtein(seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen);
+	cal_levenshtein <<< uniqueLenBlock, NUM_THREADS>>>(seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen);
 
 	//filter levenshtein
 	double_flag(uniquePairs, uniqueDistances, flags, pairOutput, distanceOutput, buffer, uniqueLen);
@@ -89,11 +90,11 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	Int3* seq1Device;
 	int seq1Bytes = sizeof(Int3) * seq1Len;
 
-	cudaMalloc((void**)&seq1Device, seq1Bytes);
+	cudaMalloc(&seq1Device, seq1Bytes);
 	cudaMemcpy(seq1Device, seq1, seq1Bytes, cudaMemcpyHostToDevice);
 
 	if (verbose)
-		printf("step 1 completed\n");
+		printf("step 1 completed %d\n", seq1Len);
 
 	//=====================================
 	// step 2: generate deletion combinations
@@ -104,7 +105,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	    gen_combinations(seq1Device, distance, combinationKeys, combinationValues, seq1Len);
 
 	if (verbose)
-		printf("step 2 completed\n");
+		printf("step 2 completed %d\n", combinationLen);
 
 	//=====================================
 	// step 3: turn combinations into pairs
@@ -114,7 +115,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	    gen_pairs(combinationKeys, combinationValues, pairs, combinationLen, deviceInt);
 
 	if (verbose)
-		printf("step 3 completed\n");
+		printf("step 3 completed %d\n", pairLength);
 
 	//=====================================
 	// step 4: Levenshtein/duplicate postprocessing
@@ -125,17 +126,17 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	    postprocessing(seq1Device, pairs, distance, outputPairs, outputDistances, pairLength, deviceInt);
 
 	if (verbose)
-		printf("step 4 completed\n");
+		printf("step 4 completed %d\n", outputLen);
 
 	//=====================================
 	// step 5: transfer output to CPU
 	//=====================================
 	int pairBytes = sizeof(Int2) * outputLen;
-	cudaMallocHost((void**)&output->indexPairs, pairBytes);
+	cudaMallocHost(&output->indexPairs, pairBytes);
 	cudaMemcpy(outputPairs, output->indexPairs, pairBytes, cudaMemcpyDeviceToHost);
 
 	int distanceBytes = sizeof(char) * outputLen;
-	cudaMallocHost((void**)&output->pairwiseDistances, distanceBytes);
+	cudaMallocHost(&output->pairwiseDistances, distanceBytes);
 	cudaMemcpy(outputDistances, output->pairwiseDistances, distanceBytes, cudaMemcpyDeviceToHost);
 
 	output->len = outputLen;
