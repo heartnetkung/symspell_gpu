@@ -25,7 +25,7 @@ int gen_combinations(Int3* seq, int distance, Int3* &outputKeys, int* &outputVal
 	gen_combination <<< seq1LenBlocks, NUM_THREADS >>> (
 	    seq, combinationOffsets, distance, outputKeys, outputValues, n);
 
-	// cudaDeviceSynchronize();
+	cudaDeviceSynchronize();
 	cudaFree(combinationOffsets);
 	return outputLen;
 }
@@ -55,7 +55,7 @@ int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buff
 	cudaMalloc(&output, sizeof(Int2)*outputLen);
 	generate_pairs <<< nUniqueBlock, NUM_THREADS>>>(inputValues, output, valueOffsets, pairOffsets, nUnique);
 
-	// cudaDeviceSynchronize();
+	cudaDeviceSynchronize();
 	_cudaFree(valueOffsets, pairOffsets);
 	return outputLen;
 }
@@ -83,10 +83,10 @@ int postprocessing(Int3* seq, Int2* input, int distance,
 	//filter levenshtein
 	double_flag(uniquePairs, uniqueDistances, flags, pairOutput, distanceOutput, buffer, uniqueLen);
 
-	// int outputLen =  transfer_last_element(buffer, 1);
+	int outputLen =  transfer_last_element(buffer, 1);
 	_cudaFree(uniquePairs, uniqueDistances, flags);
-	// return outputLen;
-	return transfer_last_element(buffer, 1);
+	return outputLen;
+	// return transfer_last_element(buffer, 1);
 }
 
 int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
@@ -154,7 +154,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	if (verbose)
 		printf("step 5 completed\n");
 
-	// cudaDeviceSynchronize();
+	cudaDeviceSynchronize();
 	_cudaFree(deviceInt, seq1Device, combinationKeys, combinationValues, pairs, outputPairs, outputDistances);
 	return 0;
 }
