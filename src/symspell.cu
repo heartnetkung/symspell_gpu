@@ -30,7 +30,7 @@ int gen_combinations(Int3* seq, int distance, Int3* &outputKeys, int* &outputVal
 	return outputLen;
 }
 
-int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buffer) {
+int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buffer, int verbose) {
 	int* valueOffsets, *pairOffsets;
 
 	// cal valueOffsets
@@ -40,6 +40,8 @@ int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buff
 
 	// cal pairOffsets
 	int nUnique = transfer_last_element(buffer, 1);
+	if (verbose)
+		printf("step 2.1 completed %d\n", nUnique);
 	int nUniqueBlock = (nUnique + NUM_THREADS) / NUM_THREADS;
 	cudaMalloc(&pairOffsets, sizeof(int)*nUnique);
 	cal_pair_len <<< nUniqueBlock, NUM_THREADS>>>(valueOffsets, pairOffsets, nUnique);
@@ -48,6 +50,8 @@ int gen_pairs(Int3* inputKeys, int* inputValues, Int2* &output, int n, int* buff
 
 	// generate pairs
 	int outputLen = transfer_last_element(pairOffsets, nUnique);
+	if (verbose)
+		printf("step 2.2 completed %d\n", outputLen);
 	cudaMalloc(&output, sizeof(Int2)*outputLen);
 	generate_pairs <<< nUniqueBlock, NUM_THREADS>>>(inputValues, output, valueOffsets, pairOffsets, nUnique);
 
@@ -118,7 +122,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	Int2* pairs;
 	int pairLength =
-	    gen_pairs(combinationKeys, combinationValues, pairs, combinationLen, deviceInt);
+	    gen_pairs(combinationKeys, combinationValues, pairs, combinationLen, deviceInt, verbose);
 
 	if (verbose)
 		printf("step 3 completed %d\n", pairLength);
