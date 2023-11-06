@@ -173,7 +173,8 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	int segment = 0;
 	for (; segment < nSegment - 1; segment++) {
 		tempPairLength =
-		    gen_pairs(combinationValues, combinationValueOffsetsP, pairLengthsP, tempPairs, n, deviceInt);
+		    gen_pairs(combinationValues, combinationValueOffsetsP,
+		              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
 		bufferLengths[segment] =
 		    postprocessing(seq1Device, tempPairs, distance, pairBuffer[segment],
 		                   distanceBuffer[segment], tempPairLength, deviceInt);
@@ -187,7 +188,8 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	chunkPerSegment = offsetLen % nSegment;
 	segment = n - 1;
 	tempPairLength =
-	    gen_pairs(combinationValues, combinationValueOffsetsP, pairLengthsP, tempPairs, n, deviceInt);
+	    gen_pairs(combinationValues, combinationValueOffsetsP,
+	              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
 	bufferLengths[segment] =
 	    postprocessing(seq1Device, tempPairs, distance, pairBuffer[segment],
 	                   distanceBuffer[segment], tempPairLength, deviceInt);
@@ -204,8 +206,8 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	int outputLen;
 
 	if (nSegment == 1) {
-		outputPairs = outputPairBuffer[0];
-		outputDistances = outputDistanceBuffer[0];
+		outputPairs = pairBuffer[0];
+		outputDistances = distanceBuffer[0];
 		outputLen = bufferLengths[0];
 	} else {
 		Int2* pairAllBuffer;
@@ -222,7 +224,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 
 	print_tp(verbose, "5", outputLen);
 	for (int i = 0; i < nSegment; i++)
-		_cudaFree(pairBuffer[i], distanceBuffer[i], bufferLengths[i]);
+		_cudaFree(pairBuffer[i], distanceBuffer[i]);
 	_cudaFreeHost(pairBuffer, distanceBuffer, bufferLengths);
 
 	//=====================================
