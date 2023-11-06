@@ -205,7 +205,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	}
 
 	chunkPerSegment = offsetLen % nSegment;
-	segment = n - 1;
+	segment = nSegment - 1;
 	tempPairLength =
 	    gen_pairs(combinationValues, combinationValueOffsetsP,
 	              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
