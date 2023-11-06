@@ -8,6 +8,7 @@ const char HELP_TEXT[] = "symspell_gpu\n"
                          "\t -p or --input-path [str] (required): set the path of input file which is a text file containing one CDR3 sequence per line\n"
                          "\t -n or --input-length [number] (required): set the number of sequences given in the input file\n"
                          "\t -d or --distance [number]: set the distance threshold defining the neighbor\n"
+                         "\t -s or --n-segment [number]: when the GPU runs out of memory, segment the problem into N smaller problems to save memory at the expense of runtime\n"
                          "\t -c or --check-output: check if the output is correct using brute force algorithm (very slow!)\n"
                          "\t -o or --output-path [str]: set the path of the output file (default to no output)\n"
                          "\t -v or --version: print the version of the program then exit\n"
@@ -45,6 +46,11 @@ int parse_args(int argc, char **argv, SymspellArgs* ans) {
 			ans->seq1Len = atoi(argv[++i]);
 			if (ans->seq1Len == 0)
 				return print_err("invalid input length");
+		}
+		else if (strcmp(current, "-s") == 0 || strcmp(current, "--n-segment") == 0) {
+			int nSegment = ans->nSegment = atoi(argv[++i]);
+			if (nSegment < 1)
+				return print_err("nSegment must be larger than zero");
 		}
 		else
 			return print_err("unknown option");
