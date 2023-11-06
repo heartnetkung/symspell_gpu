@@ -90,7 +90,7 @@ void print_tp(int verbose, char* step, int throughput) {
 }
 
 void _cudaFreeHost(void* a, void* b, void*c){
-	cudaFreeHose(a);
-	cudaFreeHose(b);
-	cudaFreeHose(c);
+	cudaFreeHost(a);
+	cudaFreeHost(b);
+	cudaFreeHost(c);
 }

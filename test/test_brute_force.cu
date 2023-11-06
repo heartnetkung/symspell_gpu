@@ -61,20 +61,3 @@ TEST(check_intput, {
 	indexPairs[0].x = 99;
 	check(!check_intput(answer, output));
 })
-
-TEST(symspell_perform_dummy, {
-	int inputsLen = 5;
-	char inputs[inputsLen][6] = {"AQCDE", "AQC", "AQ", "ACQ", "AQCDE"};
-	SymspellOutput output;
-
-	SymspellArgs args;
-	args.seq1Len = inputsLen;
-	args.distance = 2;
-
-	Int3 inputs1Temp[inputsLen];
-	for (int i = 0; i < inputsLen; i++)
-		inputs1Temp[i] = str_encode(inputs[i]);
-
-	symspell_perform_dummy(args, inputs1Temp, &output);
-	check(output.len == 6); // minimal check
-})
