@@ -10,7 +10,7 @@ struct Int3Comparator {
 		if (lhs.entry[0] != rhs.entry[0])
 			return lhs.entry[0] < rhs.entry[0];
 		if (lhs.entry[1] != rhs.entry[1])
-			return lhs.entry[0] < rhs.entry[0];
+			return lhs.entry[1] < rhs.entry[1];
 		return lhs.entry[2] < rhs.entry[2];
 	}
 };
