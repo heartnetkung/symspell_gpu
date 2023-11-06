@@ -24,10 +24,6 @@ struct Int2Comparator {
 	}
 };
 
-void inclusive_sum(int* input, int n) {
-	inclusive_sum(input, input, n);
-}
-
 void inclusive_sum(int* input, int* output, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
@@ -35,6 +31,10 @@ void inclusive_sum(int* input, int* output, int n) {
 	cudaMalloc(&buffer, bufferSize);
 	cub::DeviceScan::InclusiveSum(buffer, bufferSize, input, output, n);
 	cudaFree(buffer);
+}
+
+void inclusive_sum(int* input, int n) {
+	inclusive_sum(input, input, n);
 }
 
 void sort_key_values(Int3* keys, int* values, int n) {
