@@ -81,23 +81,23 @@ void unique_counts(Int3* keys, int* output, int* outputLen, int n) {
 	cudaFree(dummy);
 }
 
+void non_trivial_runs(Int2* input, int* offsetOut, int* lengthOut, int* outputLen, int n) {
+	void *buffer = NULL;
+	size_t bufferSize = 0;
+	cub::DeviceRunLengthEncode::NonTrivialRuns(
+	    buffer, bufferSize, input, offsetOut, lengthOut, outputLen, n);
+	cudaMalloc(&buffer, bufferSize);
+	cub::DeviceRunLengthEncode::NonTrivialRuns(
+	    buffer, bufferSize, input, offsetOut, lengthOut, outputLen, n);
+	cudaFree(buffer);
+}
+
 void unique(Int2* input, Int2* output, int* outputLen, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
 	cub::DeviceSelect::Unique(buffer, bufferSize, input, output, outputLen, n);
 	cudaMalloc(&buffer, bufferSize);
 	cub::DeviceSelect::Unique(buffer, bufferSize, input, output, outputLen, n);
-	cudaFree(buffer);
-}
-
-void unique_by_key(Int2* keyInput, char* valueInput, Int2* keyOutput, char* valueOutput, int* outputLen, int n) {
-	void *buffer = NULL;
-	size_t bufferSize = 0;
-	cub::DeviceSelect::UniqueByKey(
-	    buffer, bufferSize, keyInput, valueInput, keyOutput, valueOutput, outputLen, n);
-	cudaMalloc(&buffer, bufferSize);
-	cub::DeviceSelect::UniqueByKey(
-		buffer, bufferSize, keyInput, valueInput, keyOutput, valueOutput, outputLen, n);
 	cudaFree(buffer);
 }
 

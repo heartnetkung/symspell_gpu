@@ -111,10 +111,29 @@ int concat_buffers(Int2** keyBuffer, char** valueBuffer, int* bufferLengths,
 }
 
 int remove_duplicate(Int2* keyInput, char* valueInput, Int2* &keyOutput, char* &valueOutput, int n, int* buffer) {
+	char* flags;
+	int* runOffsets, *runLengths;
+
 	cudaMalloc(&keyOutput, sizeof(Int2)*n);
 	cudaMalloc(&valueOutput, sizeof(char)*n);
+	cudaMalloc(&flags, sizeof(char)*n);
+	cudaMalloc(&runOffsets, sizeof(int)*n);
+	cudaMalloc(&runLengths, sizeof(int)*n);
+
+	// sort
 	sort_key_values2(keyInput, valueInput, n);
-	unique_by_key(keyInput, valueInput, keyOutput, valueOutput, buffer, n);
+
+	// make flag
+	non_trivial_runs(keyInput, runOffsets, runLengths, buffer, n);
+	int runLength = transfer_last_element(buffer, 1);
+	cudaMemset(flags, 1, sizeof(char)*n);
+	int runBlock = divideCeil(runLength, NUM_THREADS);
+	non_trivial_runs_flag <<< runBlock, NUM_THREADS>>>(runOffsets, runLengths, flags, runLength);
+
+	//filter
+	double_flag(keyInput, valueInput, flags, keyOutput, valueOutput, buffer, n);
+
+	_cudaFree(flags, runOffsets, runLengths);
 	return transfer_last_element(buffer, 1);
 }
 
