@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include "codec.cu"
 #include "generate_combination.cu"
 #include "cub.cu"
@@ -10,7 +9,7 @@ const int NUM_THREADS = 256;
 
 int gen_combinations(Int3* seq, int distance, Int3* &outputKeys, int* &outputValues, int n) {
 	int *combinationOffsets;
-	int seq1LenBlocks = (n + NUM_THREADS) / NUM_THREADS;
+	int seq1LenBlocks = divideCeil(n, NUM_THREADS);
 
 	// cal combinationOffsets
 	cudaMalloc((void**)&combinationOffsets, sizeof(int)*n);
@@ -37,7 +36,7 @@ int cal_offsets(Int3* inputKeys, int* inputValues, int* &inputOffsets, int* &out
 
 	// cal pairOffsets
 	int nUnique = transfer_last_element(buffer, 1);
-	int nUniqueBlock = (nUnique + NUM_THREADS) / NUM_THREADS;
+	int nUniqueBlock = divideCeil(nUnique, NUM_THREADS);
 	cudaMalloc(&outputLengths, sizeof(int)*nUnique);
 	cal_pair_len <<< nUniqueBlock, NUM_THREADS>>>(inputOffsets, outputLengths, nUnique);
 	inclusive_sum(inputOffsets, nUnique);
@@ -53,7 +52,7 @@ int gen_pairs(int* input, int* inputOffsets, int* outputLengths, Int2* &output, 
 
 	// generate pairs
 	int outputLen = transfer_last_element(outputOffsets, n);
-	int nBlock = (n + NUM_THREADS) / NUM_THREADS;
+	int nBlock = divideCeil(n, NUM_THREADS);
 	cudaMalloc(&output, sizeof(Int2)*outputLen);
 	generate_pairs <<< nBlock, NUM_THREADS>>>(input, output, inputOffsets, outputOffsets, n);
 
@@ -74,7 +73,7 @@ int postprocessing(Int3* seq, Int2* input, int distance,
 	// cal levenshtein
 	int uniqueLen = transfer_last_element(buffer, 1);
 	int byteRequirement = sizeof(char) * uniqueLen;
-	int uniqueLenBlock = (uniqueLen + NUM_THREADS) / NUM_THREADS;
+	int uniqueLenBlock = divideCeil(uniqueLen, NUM_THREADS);
 	cudaMalloc(&flags, byteRequirement);
 	cudaMalloc(&uniqueDistances, byteRequirement);
 	cudaMalloc(&distanceOutput, byteRequirement);
@@ -166,7 +165,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	cudaMallocHost(&distanceBuffer, sizeof(char*)*nSegment);
 	cudaMallocHost(&bufferLengths, sizeof(int)*nSegment);
 
-	int chunkPerSegment = (offsetLen + nSegment) / nSegment;
+	int chunkPerSegment = divideCeil(offsetLen, nSegment);
 	Int2* tempPairs;
 	int tempPairLength;
 	int* combinationValueOffsetsP = combinationValueOffsets;

@@ -89,8 +89,12 @@ void print_tp(int verbose, char* step, int throughput) {
 		printf("step %s completed with throughput: %'d\n", step, throughput);
 }
 
-void _cudaFreeHost(void* a, void* b, void*c){
+void _cudaFreeHost(void* a, void* b, void* c) {
 	cudaFreeHost(a);
 	cudaFreeHost(b);
 	cudaFreeHost(c);
+}
+
+int divideCeil(int a, int b) {
+	return (a + b) / b;
 }
