@@ -215,7 +215,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	print_tp(verbose, "4.1", tempPairLength);
 	print_tp(verbose, "4.2", bufferLengths[segment]);
 
-	_cudaFree(seq1Device, combinationValues, combinationValueOffsets, pairLengths);
+	_cudaFree(seq1Device, combinationValues, combinationValueOffsets, pairLengths, tempPairs);
 
 	//=====================================
 	// step 5: merge buffers

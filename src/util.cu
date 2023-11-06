@@ -21,6 +21,9 @@ void print_args(SymspellArgs args) {
 	printf("\tverbose: %d\n", args.verbose);
 	printf("\tseq1Len: %d\n", args.seq1Len);
 	printf("\tseq1Path: \"%s\"\n", args.seq1Path);
+	printf("\toutputPath: \"%s\"\n", args.outputPath);
+	printf("\tcheckOutput: %d\n", args.checkOutput);
+	printf("\tnSegment: %d\n", args.nSegment);
 	printf("}\n");
 }
 
