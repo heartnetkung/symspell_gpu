@@ -25,11 +25,15 @@ struct Int2Comparator {
 };
 
 void inclusive_sum(int* input, int n) {
+	inclusive_sum(input, input, n);
+}
+
+void inclusive_sum(int* input, int* output, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
-	cub::DeviceScan::InclusiveSum(buffer, bufferSize, input, input, n);
+	cub::DeviceScan::InclusiveSum(buffer, bufferSize, input, output, n);
 	cudaMalloc(&buffer, bufferSize);
-	cub::DeviceScan::InclusiveSum(buffer, bufferSize, input, input, n);
+	cub::DeviceScan::InclusiveSum(buffer, bufferSize, input, output, n);
 	cudaFree(buffer);
 }
 
@@ -37,6 +41,16 @@ void sort_key_values(Int3* keys, int* values, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
 	Int3Comparator op;
+	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
+	cudaMalloc(&buffer, bufferSize);
+	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
+	cudaFree(buffer);
+}
+
+void sort_key_values2(Int2* keys, char* values, int n) {
+	void *buffer = NULL;
+	size_t bufferSize = 0;
+	Int2Comparator op;
 	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
 	cudaMalloc(&buffer, bufferSize);
 	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
@@ -73,6 +87,17 @@ void unique(Int2* input, Int2* output, int* outputLen, int n) {
 	cub::DeviceSelect::Unique(buffer, bufferSize, input, output, outputLen, n);
 	cudaMalloc(&buffer, bufferSize);
 	cub::DeviceSelect::Unique(buffer, bufferSize, input, output, outputLen, n);
+	cudaFree(buffer);
+}
+
+void unique_by_key(Int2* keyInput, char* valueInput, Int2* keyOutput, char* valueOutput, int* outputLen, int n) {
+	void *buffer = NULL;
+	size_t bufferSize = 0;
+	cub::DeviceSelect::UniqueByKey(
+	    buffer, bufferSize, keyInput, valueInput, keyOutput, valueOutput, outputLen, n);
+	cudaMalloc(&buffer, bufferSize);
+	cub::DeviceSelect::UniqueByKey(
+		buffer, bufferSize, keyInput, valueInput, keyOutput, valueOutput, outputLen, n);
 	cudaFree(buffer);
 }
 
