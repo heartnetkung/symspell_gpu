@@ -104,7 +104,7 @@ int concat_buffers(Int2** keyBuffer, char** valueBuffer, int* bufferLengths,
 		cudaMemcpy(keyOutputP, keyBuffer[i], sizeof(Int2)*bufferLength, cudaMemcpyDeviceToDevice);
 		cudaMemcpy(valueOutputP, valueBuffer[i], sizeof(char)*bufferLength, cudaMemcpyDeviceToDevice);
 		keyOutputP += bufferLength;
-		valueOutputP += bufferLength;
+		valueOutputP += bufferLength; // divided by 4?
 	}
 
 	return totalBufferLength;
@@ -204,7 +204,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 		pairLengthsP += chunkPerSegment;
 	}
 
-	chunkPerSegment = offsetLen % nSegment;
+	chunkPerSegment = nSegment == 1 ? chunkPerSegment : offsetLen % chunkPerSegment;
 	segment = nSegment - 1;
 	tempPairLength =
 	    gen_pairs(combinationValues, combinationValueOffsetsP,
@@ -256,6 +256,8 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	int distanceBytes = sizeof(char) * outputLen;
 	cudaMallocHost(&output->pairwiseDistances, distanceBytes);
 	cudaMemcpy(output->pairwiseDistances, outputDistances, distanceBytes, cudaMemcpyDeviceToHost);
+
+	output->len = outputLen;
 
 	print_tp(verbose, "6", outputLen);
 	_cudaFree(deviceInt, outputPairs, outputDistances);

@@ -99,5 +99,5 @@ void _cudaFreeHost(void* a, void* b, void* c) {
 }
 
 int divideCeil(int a, int b) {
-	return (a + b) / b;
+	return (a + b - 1) / b;
 }
