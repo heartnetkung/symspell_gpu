@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "symspell.cu"
 #include "brute_force.cu"
+#include <locale.h>
 
 const char VERSION[] = "0.0.1\n";
 const char HELP_TEXT[] = "symspell_gpu\n"
@@ -140,6 +141,7 @@ int main(int argc, char **argv) {
 		print_args(args);
 
 	// 3. perform algorithm
+    setlocale(LC_ALL,"");
 	symspell_perform(args, seq1, &output);
 
 	// 4. write output, if requested
@@ -162,6 +164,6 @@ int main(int argc, char **argv) {
 	// 6. clean up
 	cudaFreeHost(seq1);
 	symspell_free(&output);
-	printf("Success! Number of triplet: %d\n", output.len);
+	printf("Success! Number of triplet: %'d\n", output.len);
 	return 0;
 }
