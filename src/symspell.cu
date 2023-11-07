@@ -147,12 +147,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	// step 1: transfer input to GPU
 	//=====================================
-	Int3* seq1Device;
-	int seq1Bytes = sizeof(Int3) * seq1Len;
-
-	cudaMalloc(&seq1Device, seq1Bytes);
-	cudaMemcpy(seq1Device, seq1, seq1Bytes, cudaMemcpyHostToDevice);
-
+	Int3* seq1Device = host_to_device(seq1, seq1Len);
 	print_tp(verbose, "1", seq1Len);
 
 	//=====================================
@@ -240,14 +235,8 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	// step 6: transfer output to CPU
 	//=====================================
-	int pairBytes = sizeof(Int2) * outputLen;
-	cudaMallocHost(&output->indexPairs, pairBytes);
-	cudaMemcpy(output->indexPairs, outputPairs, pairBytes, cudaMemcpyDeviceToHost);
-
-	int distanceBytes = sizeof(char) * outputLen;
-	cudaMallocHost(&output->pairwiseDistances, distanceBytes);
-	cudaMemcpy(output->pairwiseDistances, outputDistances, distanceBytes, cudaMemcpyDeviceToHost);
-
+	output->indexPairs = device_to_host(outputPairs, outputLen);
+	output->pairwiseDistances = device_to_host(outputDistances, outputLen);
 	output->len = outputLen;
 
 	print_tp(verbose, "6", outputLen);

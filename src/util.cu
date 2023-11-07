@@ -103,10 +103,19 @@ int divideCeil(int a, int b) {
 }
 
 template <typename T>
-T* arr_to_device(T* arr, int n){
+T* device_to_host(T* arr, int n){
 	T* temp;
 	int tempBytes = sizeof(T)*n;
 	cudaMallocHost(&temp, tempBytes);
 	cudaMemcpy(temp, arr, tempBytes, cudaMemcpyDeviceToHost);
+	return temp;
+}
+
+template <typename T>
+T* host_to_device(T* arr, int n){
+	T* temp;
+	int tempBytes = sizeof(T)*n;
+	cudaMalloc(&temp, tempBytes);
+	cudaMemcpy(temp, arr, tempBytes, cudaMemcpyHostToDevice);
 	return temp;
 }
