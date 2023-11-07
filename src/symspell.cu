@@ -44,7 +44,7 @@ int cal_offsets(Int3* inputKeys, int* inputValues, int* &inputOffsets, int* &out
 }
 
 //inputOffsets, outputLengths, n moved as per loop
-int gen_pairs(int* input, int* inputOffsets, int* outputLengths, Int2* &output, int n, int* buffer) {
+int gen_pairs(int* input, int* inputOffsets, int &carry, int* outputLengths, Int2* &output, int n, int* buffer) {
 	// generate output offsets
 	int* outputOffsets;
 	cudaMalloc(&outputOffsets, sizeof(int)*n);
@@ -54,8 +54,9 @@ int gen_pairs(int* input, int* inputOffsets, int* outputLengths, Int2* &output, 
 	int outputLen = transfer_last_element(outputOffsets, n);
 	int nBlock = divideCeil(n, NUM_THREADS);
 	cudaMalloc(&output, sizeof(Int2)*outputLen);
-	generate_pairs <<< nBlock, NUM_THREADS>>>(input, output, inputOffsets, outputOffsets, n);
+	generate_pairs <<< nBlock, NUM_THREADS>>>(input, carry, output, inputOffsets, outputOffsets, n);
 
+	carry += transfer_last_element(inputOffsets, n);
 	cudaFree(outputOffsets);
 	return outputLen;
 }
@@ -183,6 +184,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	int tempPairLength;
 	int* combinationValueOffsetsP = combinationValueOffsets;
 	int* pairLengthsP = pairLengths;
+	int carry = 0;
 
 	for (int i = 0; i < nSegment; i++) {
 		// the last segment can be smaller than others
@@ -190,7 +192,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 			chunkPerSegment = offsetLen % chunkPerSegment;
 
 		tempPairLength =
-		    gen_pairs(combinationValues, combinationValueOffsetsP,
+		    gen_pairs(combinationValues, combinationValueOffsetsP, carry,
 		              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
 		bufferLengths[i] =
 		    postprocessing(seq1Device, tempPairs, distance, pairBuffer[i],

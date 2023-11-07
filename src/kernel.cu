@@ -36,14 +36,15 @@ void cal_pair_len(int* input, int* output, int n) {
 }
 
 __global__
-void generate_pairs(int* indexes, Int2* outputs, int* inputOffsets, int* outputOffsets, int n) {
+void generate_pairs(int* indexes, int carry, Int2* outputs, int* inputOffsets, int* outputOffsets, int n) {
 	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 	if (tid >= n)
 		return;
 
-	int start = tid == 0 ? 0 : inputOffsets[tid - 1];
+	int start = tid == 0 ? carry : inputOffsets[tid - 1];
 	int end = inputOffsets[tid];
 	int outputIndex = tid == 0 ? 0 : outputOffsets[tid - 1];
+	int outputEnd = outputOffsets[tid];
 
 	for (int i = start; i < end; i++) {
 		for (int j = i + 1; j < end; j++) {
@@ -55,7 +56,10 @@ void generate_pairs(int* indexes, Int2* outputs, int* inputOffsets, int* outputO
 				newValue.x = indexes[j];
 				newValue.y = indexes[i];
 			}
-			outputs[outputIndex++] = newValue;
+			if (outputIndex++ < outputEnd)
+				outputs[outputIndex] = newValue;
+			else
+				printf("potential error on generate pairs\n");
 		}
 	}
 }
