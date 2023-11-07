@@ -78,10 +78,12 @@ int postprocessing(Int3* seq, Int2* input, int distance,
 	cudaMalloc(&uniqueDistances, byteRequirement);
 	cudaMalloc(&distanceOutput, byteRequirement);
 	cudaMalloc(&pairOutput, sizeof(Int2)*uniqueLen);
-	cal_levenshtein <<< uniqueLenBlock, NUM_THREADS>>>(seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen);
+	cal_levenshtein <<< uniqueLenBlock, NUM_THREADS>>>(
+	    seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen);
 
 	//filter levenshtein
-	double_flag(uniquePairs, uniqueDistances, flags, pairOutput, distanceOutput, buffer, uniqueLen);
+	double_flag(uniquePairs, uniqueDistances, flags, pairOutput,
+	            distanceOutput, buffer, uniqueLen);
 
 	_cudaFree(uniquePairs, uniqueDistances, flags);
 	return transfer_last_element(buffer, 1);
@@ -177,12 +179,9 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	// step 4: generate output buffers segment by segment
 	//=====================================
-	Int2** pairBuffer;
-	char** distanceBuffer;
-	int* bufferLengths;
-	cudaMallocHost(&pairBuffer, sizeof(Int2*)*nSegment);
-	cudaMallocHost(&distanceBuffer, sizeof(char*)*nSegment);
-	cudaMallocHost(&bufferLengths, sizeof(int)*nSegment);
+	Int2** pairBuffer = (Int2**)malloc(sizeof(Int2*)*nSegment);
+	char** distanceBuffer = (char**)malloc(sizeof(char*)*nSegment);
+	int* bufferLengths = (int*)malloc(sizeof(int) * nSegment);
 
 	int chunkPerSegment = divideCeil(offsetLen, nSegment);
 	Int2* tempPairs;
@@ -202,6 +201,8 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 
 		combinationValueOffsetsP += chunkPerSegment;
 		pairLengthsP += chunkPerSegment;
+
+		cudaFree(tempPairs);
 	}
 
 	chunkPerSegment = nSegment == 1 ? chunkPerSegment : offsetLen % chunkPerSegment;
@@ -242,9 +243,6 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	}
 
 	print_tp(verbose, "5", outputLen);
-	for (int i = 0; i < nSegment; i++)
-		_cudaFree(pairBuffer[i], distanceBuffer[i]);
-	_cudaFreeHost(pairBuffer, distanceBuffer, bufferLengths);
 
 	//=====================================
 	// step 6: transfer output to CPU
@@ -261,6 +259,9 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 
 	print_tp(verbose, "6", outputLen);
 	_cudaFree(deviceInt, outputPairs, outputDistances);
+	for (int i = 0; i < nSegment; i++)
+		_cudaFree(pairBuffer[i], distanceBuffer[i]);
+	_free(pairBuffer, distanceBuffer, bufferLengths);
 	return 0;
 }
 

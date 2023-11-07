@@ -92,12 +92,21 @@ void print_tp(int verbose, const char* step, int throughput) {
 		printf("step %s completed with throughput: %'d\n", step, throughput);
 }
 
-void _cudaFreeHost(void* a, void* b, void* c) {
-	cudaFreeHost(a);
-	cudaFreeHost(b);
-	cudaFreeHost(c);
+void _free(void* a, void* b, void* c) {
+	free(a);
+	free(b);
+	free(c);
 }
 
 int divideCeil(int a, int b) {
 	return (a + b - 1) / b;
+}
+
+template <typename T>
+T* arr_to_device(T* arr, int n){
+	T* temp;
+	int tempBytes = sizeof(T)*n;
+	cudaMallocHost(&temp, tempBytes);
+	cudaMemcpy(temp, arr, tempBytes, cudaMemcpyDeviceToHost);
+	return temp;
 }
