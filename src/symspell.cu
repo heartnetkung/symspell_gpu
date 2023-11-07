@@ -188,33 +188,26 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	int tempPairLength;
 	int* combinationValueOffsetsP = combinationValueOffsets;
 	int* pairLengthsP = pairLengths;
-	int segment = 0;
-	for (; segment < nSegment - 1; segment++) {
+
+	for (int i = 0; i < nSegment; i++) {
+		// the last segment can be smaller than others
+		if ((i == nSegment - 1) && (nSegment != 1) )
+			chunkPerSegment = offsetLen % chunkPerSegment;
+
 		tempPairLength =
 		    gen_pairs(combinationValues, combinationValueOffsetsP,
 		              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
-		bufferLengths[segment] =
-		    postprocessing(seq1Device, tempPairs, distance, pairBuffer[segment],
-		                   distanceBuffer[segment], tempPairLength, deviceInt);
+		bufferLengths[i] =
+		    postprocessing(seq1Device, tempPairs, distance, pairBuffer[i],
+		                   distanceBuffer[i], tempPairLength, deviceInt);
 		print_tp(verbose, "4.1", tempPairLength);
-		print_tp(verbose, "4.2", bufferLengths[segment]);
+		print_tp(verbose, "4.2", bufferLengths[i]);
 
 		combinationValueOffsetsP += chunkPerSegment;
 		pairLengthsP += chunkPerSegment;
 
 		cudaFree(tempPairs);
 	}
-
-	chunkPerSegment = nSegment == 1 ? chunkPerSegment : offsetLen % chunkPerSegment;
-	segment = nSegment - 1;
-	tempPairLength =
-	    gen_pairs(combinationValues, combinationValueOffsetsP,
-	              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
-	bufferLengths[segment] =
-	    postprocessing(seq1Device, tempPairs, distance, pairBuffer[segment],
-	                   distanceBuffer[segment], tempPairLength, deviceInt);
-	print_tp(verbose, "4.1", tempPairLength);
-	print_tp(verbose, "4.2", bufferLengths[segment]);
 
 	_cudaFree(seq1Device, combinationValues, combinationValueOffsets, pairLengths, tempPairs);
 
