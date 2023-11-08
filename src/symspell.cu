@@ -231,7 +231,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	Int2* tempPairs;
 	int tempPairLength;
 	int carry = 0;
-	int *pairLengthsP = pairLengths, *combinationValueOffsetsP = combinationOffsets;
+	int *pairLengthsP = pairLengths, *combinationValueOffsetsP = combinationValueOffsets;
 
 	for (int i = 0; i < nSegment; i++) {
 		// the last segment can be smaller than others
