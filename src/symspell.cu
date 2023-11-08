@@ -182,8 +182,6 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	int chunkPerSegment = divideCeil(offsetLen, nSegment);
 	Int2* tempPairs;
 	int tempPairLength;
-	int* combinationValueOffsetsP = combinationValueOffsets;
-	int* pairLengthsP = pairLengths;
 	int carry = 0;
 
 	for (int i = 0; i < nSegment; i++) {
@@ -192,16 +190,16 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 			chunkPerSegment = offsetLen % chunkPerSegment;
 
 		tempPairLength =
-		    gen_pairs(combinationValues, combinationValueOffsetsP, carry,
-		              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
+		    gen_pairs(combinationValues, combinationValueOffsets, carry,
+		              pairLengths, tempPairs, chunkPerSegment, deviceInt);
 		bufferLengths[i] =
 		    postprocessing(seq1Device, tempPairs, distance, pairBuffer[i],
 		                   distanceBuffer[i], tempPairLength, deviceInt);
 		print_tp(verbose, "4.1", tempPairLength);
 		print_tp(verbose, "4.2", bufferLengths[i]);
 
-		combinationValueOffsetsP += chunkPerSegment;
-		pairLengthsP += chunkPerSegment;
+		combinationValueOffsets += chunkPerSegment;
+		pairLengths += chunkPerSegment;
 
 		cudaFree(tempPairs);
 	}
