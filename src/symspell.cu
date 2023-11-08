@@ -186,7 +186,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 
 	for (int i = 0; i < nSegment; i++) {
 		// the last segment can be smaller than others
-		if ((i == nSegment - 1) && (nSegment != 1) )
+		if ((i == nSegment - 1) && (nSegment != 1) && (offsetLen % chunkPerSegment != 0) )
 			chunkPerSegment = offsetLen % chunkPerSegment;
 
 		tempPairLength =

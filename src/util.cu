@@ -119,3 +119,7 @@ T* host_to_device(T* arr, int n) {
 	cudaMemcpy(temp, arr, tempBytes, cudaMemcpyHostToDevice);
 	return temp;
 }
+
+void print_cuda_error(const char* str) {
+	printf("%s %s\n", str, cudaGetErrorName(cudaGetLastError()));
+}
