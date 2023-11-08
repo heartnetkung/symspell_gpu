@@ -174,6 +174,9 @@ void symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 				chunkPerSegment = offsetLen % chunkPerSegment;
 		}
 
+		if (verbose)
+			printf("starting iteration #%d with throughput: %d\n", i, chunkPerSegment);
+
 		Int2* pairTemp, *pairOut;
 		char* distanceOut;
 
