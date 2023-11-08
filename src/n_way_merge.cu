@@ -17,7 +17,7 @@ void n_way_merge(Int2** pairInput, char** distanceInput, int* inputSizes,
 		return;
 	}
 
-	int* currentOffsets = (int*)calloc(n, sizeof(int));
+	size_t* currentOffsets = (size_t*)calloc(n, sizeof(size_t));
 	std::vector<Int2> pairOutput;
 	std::vector<char> distanceOutput;
 	Int2 minimum = {.x = INT_MAX, .y = INT_MAX};

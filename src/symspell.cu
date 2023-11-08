@@ -203,9 +203,8 @@ void symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	// step 5: merge output at CPU
 	//=====================================
-	n_way_merge(pairBuffer, distanceBuffer, bufferLengths, &output, nSegment);
-
-	print_tp(verbose, "5", output.len);
+	n_way_merge(pairBuffer, distanceBuffer, bufferLengths, output, nSegment);
+	print_tp(verbose, "5", output->len);
 
 	//=====================================
 	// step 6: deallocate
