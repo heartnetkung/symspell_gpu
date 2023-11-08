@@ -255,7 +255,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 		cudaFree(tempPairs);
 	}
 
-	_cudaFree(seq1Device, combinationValues, combinationValueOffsets, pairLengths, tempPairs);
+	_cudaFree(seq1Device, combinationValues, combinationValueOffsets, pairLengths);
 
 	//=====================================
 	// step 5: merge buffers
