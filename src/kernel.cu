@@ -101,13 +101,20 @@ char levenshtein(Int3 x1, Int3 x2) {
 }
 
 __global__
-void cal_levenshtein(Int3* seq, Int2* index, int distance, char* distanceOutput, char* flagOutput, int n) {
+void cal_levenshtein(Int3* seq, Int2* index, int distance,
+                     char* distanceOutput, char* flagOutput, int n, int seqLen) {
 	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 	if (tid >= n)
 		return;
 
 	Int2 indexPair = index[tid];
 	if (indexPair.x == indexPair.y) {
+		flagOutput[tid] =  0;
+		return;
+	}
+
+	if (indexPair.x>=seqLen || indexPair.y>=seqLen) {
+		printf("curious case! %d %d\n",indexPair.x,indexPair.y);
 		flagOutput[tid] =  0;
 		return;
 	}

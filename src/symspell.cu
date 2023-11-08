@@ -84,7 +84,8 @@ int gen_pairs(int* input, int* inputOffsets, int &carry, int* outputLengths, Int
 }
 
 int postprocessing(Int3* seq, Int2* input, int distance,
-                   Int2* &pairOutput, char* &distanceOutput, int n, int* buffer) {
+                   Int2* &pairOutput, char* &distanceOutput,
+                   int n, int* buffer, int seqLen) {
 	Int2* uniquePairs;
 	char* uniqueDistances, *flags;
 
@@ -109,10 +110,10 @@ int postprocessing(Int3* seq, Int2* input, int distance,
 	cudaMalloc(&pairOutput, sizeof(Int2)*uniqueLen);
 	gpuerr();
 	cal_levenshtein <<< uniqueLenBlock, NUM_THREADS>>>(
-	    seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen);
+	    seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen, seqLen);
 	gpuerr();
 
-	//filter levenshtein
+	// filter levenshtein
 	double_flag(uniquePairs, uniqueDistances, flags, pairOutput,
 	            distanceOutput, buffer, uniqueLen);
 	gpuerr();
@@ -223,9 +224,9 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	// step 4: generate output buffers segment by segment
 	//=====================================
-	Int2** pairBuffer = (Int2**)malloc(sizeof(Int2*)*nSegment);
-	char** distanceBuffer = (char**)malloc(sizeof(char*)*nSegment);
-	int* bufferLengths = (int*)malloc(sizeof(int) * nSegment);
+	Int2** pairBuffer = (Int2**)calloc(nSegment,sizeof(Int2*));
+	char** distanceBuffer = (char**)calloc(nSegment,sizeof(char*));
+	int* bufferLengths = (int*)calloc(nSegment,sizeof(int));
 
 	int chunkPerSegment = divideCeil(offsetLen, nSegment);
 	Int2* tempPairs;
@@ -245,7 +246,7 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 		              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
 		bufferLengths[i] =
 		    postprocessing(seq1Device, tempPairs, distance, pairBuffer[i],
-		                   distanceBuffer[i], tempPairLength, deviceInt);
+		                   distanceBuffer[i], tempPairLength, deviceInt, seq1Len);
 		print_tp(verbose, "4.1", tempPairLength);
 		print_tp(verbose, "4.2", bufferLengths[i]);
 
