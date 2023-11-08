@@ -38,5 +38,5 @@ struct SymspellOutput {
 
 enum ReturnCode {SUCCESS, ERROR, EXIT};
 
-int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output);
+void symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output);
 void symspell_free(SymspellOutput* output);

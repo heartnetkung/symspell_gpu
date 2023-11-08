@@ -4,6 +4,7 @@
 #include "generate_combination.cu"
 #include "cub.cu"
 #include "kernel.cu"
+#include "n_way_merge.cu"
 
 const int NUM_THREADS = 256;
 
@@ -123,73 +124,7 @@ int postprocessing(Int3* seq, Int2* input, int distance,
 	return transfer_last_element(buffer, 1);
 }
 
-int concat_buffers(Int2** keyBuffer, char** valueBuffer, int* bufferLengths,
-                   Int2* &keyOutput, char* &valueOutput, int n) {
-	int totalBufferLength = 0;
-	for (int i = 0; i < n; i++)
-		totalBufferLength += bufferLengths[i];
-
-	cudaMalloc(&keyOutput, sizeof(Int2)*totalBufferLength);
-	gpuerr();
-	cudaMalloc(&valueOutput, sizeof(char)*totalBufferLength);
-	gpuerr();
-
-	Int2* keyOutputP = keyOutput;
-	char* valueOutputP = valueOutput;
-	int bufferLength;
-	for (int i = 0; i < n; i++) {
-		bufferLength = bufferLengths[i];
-		cudaMemcpy(keyOutputP, keyBuffer[i], sizeof(Int2)*bufferLength, cudaMemcpyDeviceToDevice);
-		gpuerr();
-		cudaMemcpy(valueOutputP, valueBuffer[i], sizeof(char)*bufferLength, cudaMemcpyDeviceToDevice);
-		gpuerr();
-		keyOutputP += bufferLength;
-		valueOutputP += bufferLength; // divided by 4?
-	}
-
-	return totalBufferLength;
-}
-
-int remove_duplicate(Int2* keyInput, char* valueInput, Int2* &keyOutput, char* &valueOutput, int n, int* buffer) {
-	char* flags;
-	int* runOffsets, *runLengths;
-
-	cudaMalloc(&keyOutput, sizeof(Int2)*n);
-	gpuerr();
-	cudaMalloc(&valueOutput, sizeof(char)*n);
-	gpuerr();
-	cudaMalloc(&flags, sizeof(char)*n);
-	gpuerr();
-	cudaMalloc(&runOffsets, sizeof(int)*n);
-	gpuerr();
-	cudaMalloc(&runLengths, sizeof(int)*n);
-	gpuerr();
-
-	// sort
-	sort_key_values2(keyInput, valueInput, n);
-	gpuerr();
-
-	// make flag
-	non_trivial_runs(keyInput, runOffsets, runLengths, buffer, n);
-	gpuerr();
-	int runLength = transfer_last_element(buffer, 1);
-	gpuerr();
-	cudaMemset(flags, 1, sizeof(char)*n);
-	gpuerr();
-	int runBlock = divideCeil(runLength, NUM_THREADS);
-	non_trivial_runs_flag <<< runBlock, NUM_THREADS>>>(runOffsets, runLengths, flags, runLength);
-	gpuerr();
-
-	//filter
-	double_flag(keyInput, valueInput, flags, keyOutput, valueOutput, buffer, n);
-	gpuerr();
-
-	_cudaFree(flags, runOffsets, runLengths);
-	gpuerr();
-	return transfer_last_element(buffer, 1);
-}
-
-int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
+void symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	int distance = args.distance, verbose = args.verbose, seq1Len = args.seq1Len, nSegment = args.nSegment;
 	int* deviceInt;
 	cudaMalloc((void**)&deviceInt, sizeof(int));
@@ -224,13 +159,11 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	// step 4: generate output buffers segment by segment
 	//=====================================
-	Int2** pairBuffer = (Int2**)calloc(nSegment,sizeof(Int2*));
-	char** distanceBuffer = (char**)calloc(nSegment,sizeof(char*));
-	int* bufferLengths = (int*)calloc(nSegment,sizeof(int));
+	Int2** pairBuffer = (Int2**)malloc(nSegment * sizeof(Int2*));
+	char** distanceBuffer = (char**)malloc(nSegment * sizeof(char*));
+	int* bufferLengths = (int*)malloc(nSegment * sizeof(int));
 
 	int chunkPerSegment = divideCeil(offsetLen, nSegment);
-	Int2* tempPairs;
-	int tempPairLength;
 	int carry = 0;
 	int *pairLengthsP = pairLengths, *combinationValueOffsetsP = combinationValueOffsets;
 
@@ -241,62 +174,46 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 				chunkPerSegment = offsetLen % chunkPerSegment;
 		}
 
-		tempPairLength =
-		    gen_pairs(combinationValues, combinationValueOffsetsP, carry,
-		              pairLengthsP, tempPairs, chunkPerSegment, deviceInt);
-		bufferLengths[i] =
-		    postprocessing(seq1Device, tempPairs, distance, pairBuffer[i],
-		                   distanceBuffer[i], tempPairLength, deviceInt, seq1Len);
-		print_tp(verbose, "4.1", tempPairLength);
-		print_tp(verbose, "4.2", bufferLengths[i]);
+		Int2* pairTemp, *pairOut;
+		char* distanceOut;
 
+		// 4.1
+		int pairTempLen =
+		    gen_pairs(combinationValues, combinationValueOffsetsP, carry,
+		              pairLengthsP, pairTemp, chunkPerSegment, deviceInt);
+		print_tp(verbose, "4.1", pairTempLen);
+
+		// 4.2
+		int outputLen =
+		    postprocessing(seq1Device, pairTemp, distance, pairOut,
+		                   distanceOut, pairTempLen, deviceInt, seq1Len);
+		print_tp(verbose, "4.2", outputLen);
+
+		// transfer data to CPU
+		bufferLengths[i] = outputLen;
+		pairBuffer[i] = device_to_host(pairOut, outputLen);
+		distanceBuffer[i] = device_to_host(distanceOut, outputLen);
+
+		// update loop variable
 		combinationValueOffsetsP += chunkPerSegment;
 		pairLengthsP += chunkPerSegment;
-
-		cudaFree(tempPairs);
+		_cudaFree(pairTemp, pairOut, distanceOut);
 	}
 
-	_cudaFree(seq1Device, combinationValues, combinationValueOffsets, pairLengths);
+	//=====================================
+	// step 5: merge output at CPU
+	//=====================================
+	n_way_merge(pairBuffer, distanceBuffer, bufferLengths, &output, nSegment);
+
+	print_tp(verbose, "5", output.len);
 
 	//=====================================
-	// step 5: merge buffers
+	// step 6: deallocate
 	//=====================================
-	Int2* outputPairs;
-	char* outputDistances;
-	int outputLen;
-
-	if (nSegment == 1) {
-		outputPairs = pairBuffer[0];
-		outputDistances = distanceBuffer[0];
-		outputLen = bufferLengths[0];
-	} else {
-		Int2* pairAllBuffer;
-		char* distanceAllBuffer;
-		int allBufferLen = concat_buffers(pairBuffer, distanceBuffer, bufferLengths,
-		                                  pairAllBuffer, distanceAllBuffer, nSegment);
-		print_tp(verbose, "5.1", allBufferLen);
-
-		outputLen = remove_duplicate(
-		                pairAllBuffer, distanceAllBuffer, outputPairs,
-		                outputDistances, allBufferLen, deviceInt);
-		_cudaFree(pairAllBuffer, distanceAllBuffer);
-	}
-
-	print_tp(verbose, "5", outputLen);
-
-	//=====================================
-	// step 6: transfer output to CPU
-	//=====================================
-	output->indexPairs = device_to_host(outputPairs, outputLen);
-	output->pairwiseDistances = device_to_host(outputDistances, outputLen);
-	output->len = outputLen;
-
-	print_tp(verbose, "6", outputLen);
-	_cudaFree(deviceInt, outputPairs, outputDistances);
+	_cudaFree(deviceInt, seq1Device, combinationValues, combinationValueOffsets, pairLengths);
 	for (int i = 0; i < nSegment; i++)
 		_cudaFree(pairBuffer[i], distanceBuffer[i]);
 	_free(pairBuffer, distanceBuffer, bufferLengths);
-	return 0;
 }
 
 void symspell_free(SymspellOutput *output) {
