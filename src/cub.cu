@@ -105,10 +105,10 @@ void double_flag(Int2* input1, char* input2, char* flags, Int2* output1, char* o
 	void *buffer = NULL, *buffer2 = NULL;
 	size_t bufferSize = 0, bufferSize2 = 0;
 	cub::DeviceSelect::Flagged(buffer, bufferSize, input1, flags, output1, outputLen, n);
-	cub::DeviceSelect::Flagged(buffer2, bufferSize2, input2, flags, output2, outputLen, n);
 	cudaMalloc(&buffer, bufferSize);
-	cudaMalloc(&buffer2, bufferSize2);
 	cub::DeviceSelect::Flagged(buffer, bufferSize, input1, flags, output1, outputLen, n);
+	cub::DeviceSelect::Flagged(buffer2, bufferSize2, input2, flags, output2, outputLen, n);
+	cudaMalloc(&buffer2, bufferSize2);
 	cub::DeviceSelect::Flagged(buffer2, bufferSize2, input2, flags, output2, outputLen, n);
 	_cudaFree(buffer, buffer2);
 }
