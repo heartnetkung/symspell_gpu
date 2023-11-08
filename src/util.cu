@@ -92,9 +92,9 @@ void print_tp(int verbose, const char* step, int throughput) {
 		printf("step %s completed with throughput: %'d\n", step, throughput);
 }
 
-void _free(void* a, void* b) {
-	free(a);
-	free(b);
+void _cudaFreeHost(void* a, void* b) {
+	cudaFreeHost(a);
+	cudaFreeHost(b);
 }
 
 void _free(void* a, void* b, void* c) {
