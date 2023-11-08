@@ -29,7 +29,7 @@ void n_way_merge(Int2** pairInput, char** distanceInput, int* inputSizes,
 
 		// get next candidate
 		for (int i = 0; i < n; i++) {
-			int currentOffset = currentOffsets[i];
+			size_t currentOffset = currentOffsets[i];
 			int currentSize = inputSizes[i];
 			if (currentOffset >= currentSize)
 				continue;
@@ -44,7 +44,7 @@ void n_way_merge(Int2** pairInput, char** distanceInput, int* inputSizes,
 
 		// insert if not duplicate
 		if ((candidate.x != minimum.x) || (candidate.y != minimum.y)) {
-			int currentOffset = currentOffsets[candidateIndex];
+			size_t currentOffset = currentOffsets[candidateIndex];
 			pairOutput.push_back(pairInput[candidateIndex][currentOffset]);
 			distanceOutput.push_back(distanceInput[candidateIndex][currentOffset]);
 		}
