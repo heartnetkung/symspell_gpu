@@ -77,7 +77,7 @@ int gen_pairs(int* input, int* inputOffsets, int &carry, int* outputLengths, Int
 	generate_pairs <<< nBlock, NUM_THREADS>>>(input, carry, output, inputOffsets, outputOffsets, n);
 	gpuerr();
 
-	carry += transfer_last_element(inputOffsets, n);
+	carry = transfer_last_element(inputOffsets, n);
 	gpuerr();
 	cudaFree(outputOffsets);
 	gpuerr();
@@ -175,7 +175,7 @@ void symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 		}
 
 		if (verbose)
-			printf("starting iteration #%d with throughput: %d\n", i, chunkPerSegment);
+			printf("iteration #%d----------------\n", i);
 
 		Int2* pairTemp, *pairOut;
 		char* distanceOut;
