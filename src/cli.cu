@@ -164,6 +164,6 @@ int main(int argc, char **argv) {
 	// 6. clean up
 	cudaFreeHost(seq1);
 	symspell_free(&output);
-	printf("Success! Number of triplet: %'d\n", output.len);
+	printf("Success! Number of triplet: %'zu\n", output.len);
 	return 0;
 }
