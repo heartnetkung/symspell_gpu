@@ -212,7 +212,7 @@ void symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 	//=====================================
 	// step 6: deallocate
 	//=====================================
-	_cudaFree(deviceInt, seq1Device, combinationValues, combinationValueOffsets, pairLengths);
+	_cudaFree(deviceInt, seq1Device, combinationValues, combinationValueOffsets/*, pairLengths*/);
 	for (int i = 0; i < nSegment; i++)
 		_cudaFreeHost(pairBuffer[i], distanceBuffer[i]);
 	_free(pairBuffer, distanceBuffer, bufferLengths);
