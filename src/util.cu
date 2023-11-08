@@ -120,6 +120,11 @@ T* host_to_device(T* arr, int n) {
 	return temp;
 }
 
-void print_cuda_error(const char* str) {
-	printf("%s %s\n", str, cudaGetErrorName(cudaGetLastError()));
+#define gpuerr() { print_cuda_error( __FILE__, __LINE__); }
+
+void print_cuda_error(const char *file, int line) {
+	cudaError_t code = cudaGetLastError();
+	if (code != cudaSuccess)
+		printf("Cuda error at %s %s %d\n", cudaGetErrorName(code), file, line);
 }
+

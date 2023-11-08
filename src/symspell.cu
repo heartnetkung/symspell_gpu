@@ -13,33 +13,48 @@ int gen_combinations(Int3* seq, int distance, Int3* &outputKeys, int* &outputVal
 
 	// cal combinationOffsets
 	cudaMalloc((void**)&combinationOffsets, sizeof(int)*n);
+	gpuerr();
 	cal_combination_len <<< seq1LenBlocks, NUM_THREADS >>>(
 	    seq, distance, combinationOffsets, n);
+	gpuerr();
 	inclusive_sum(combinationOffsets, n);
+	gpuerr();
 	int outputLen = transfer_last_element(combinationOffsets, n);
+	gpuerr();
 
 	// generate combinations
 	cudaMalloc(&outputKeys, sizeof(Int3)*outputLen);
+	gpuerr();
 	cudaMalloc(&outputValues, sizeof(int)*outputLen);
+	gpuerr();
 	gen_combination <<< seq1LenBlocks, NUM_THREADS >>> (
 	    seq, combinationOffsets, distance, outputKeys, outputValues, n);
+	gpuerr();
 
 	cudaFree(combinationOffsets);
+	gpuerr();
 	return outputLen;
 }
 
 int cal_offsets(Int3* inputKeys, int* inputValues, int* &inputOffsets, int* &outputLengths, int n, int* buffer) {
 	// cal valueOffsets
 	cudaMalloc(&inputOffsets, sizeof(int)*n);
+	gpuerr();
 	sort_key_values(inputKeys, inputValues, n);
+	gpuerr();
 	unique_counts(inputKeys, inputOffsets, buffer, n);
+	gpuerr();
 
 	// cal pairOffsets
 	int nUnique = transfer_last_element(buffer, 1);
+	gpuerr();
 	int nUniqueBlock = divideCeil(nUnique, NUM_THREADS);
 	cudaMalloc(&outputLengths, sizeof(int)*nUnique);
+	gpuerr();
 	cal_pair_len <<< nUniqueBlock, NUM_THREADS>>>(inputOffsets, outputLengths, nUnique);
+	gpuerr();
 	inclusive_sum(inputOffsets, nUnique);
+	gpuerr();
 	return nUnique;
 }
 
@@ -48,16 +63,23 @@ int gen_pairs(int* input, int* inputOffsets, int &carry, int* outputLengths, Int
 	// generate output offsets
 	int* outputOffsets;
 	cudaMalloc(&outputOffsets, sizeof(int)*n);
+	gpuerr();
 	inclusive_sum(outputLengths, outputOffsets, n);
+	gpuerr();
 
 	// generate pairs
 	int outputLen = transfer_last_element(outputOffsets, n);
+	gpuerr();
 	int nBlock = divideCeil(n, NUM_THREADS);
 	cudaMalloc(&output, sizeof(Int2)*outputLen);
+	gpuerr();
 	generate_pairs <<< nBlock, NUM_THREADS>>>(input, carry, output, inputOffsets, outputOffsets, n);
+	gpuerr();
 
 	carry += transfer_last_element(inputOffsets, n);
+	gpuerr();
 	cudaFree(outputOffsets);
+	gpuerr();
 	return outputLen;
 }
 
@@ -68,25 +90,35 @@ int postprocessing(Int3* seq, Int2* input, int distance,
 
 	// filter duplicate
 	cudaMalloc(&uniquePairs, sizeof(Int2)*n);
+	gpuerr();
 	sort_int2(input, n);
+	gpuerr();
 	unique(input, uniquePairs, buffer, n);
+	gpuerr();
 
 	// cal levenshtein
 	int uniqueLen = transfer_last_element(buffer, 1);
 	int byteRequirement = sizeof(char) * uniqueLen;
 	int uniqueLenBlock = divideCeil(uniqueLen, NUM_THREADS);
 	cudaMalloc(&flags, byteRequirement);
+	gpuerr();
 	cudaMalloc(&uniqueDistances, byteRequirement);
+	gpuerr();
 	cudaMalloc(&distanceOutput, byteRequirement);
+	gpuerr();
 	cudaMalloc(&pairOutput, sizeof(Int2)*uniqueLen);
+	gpuerr();
 	cal_levenshtein <<< uniqueLenBlock, NUM_THREADS>>>(
 	    seq, uniquePairs, distance, uniqueDistances, flags, uniqueLen);
+	gpuerr();
 
 	//filter levenshtein
 	double_flag(uniquePairs, uniqueDistances, flags, pairOutput,
 	            distanceOutput, buffer, uniqueLen);
+	gpuerr();
 
 	_cudaFree(uniquePairs, uniqueDistances, flags);
+	gpuerr();
 	return transfer_last_element(buffer, 1);
 }
 
@@ -97,7 +129,9 @@ int concat_buffers(Int2** keyBuffer, char** valueBuffer, int* bufferLengths,
 		totalBufferLength += bufferLengths[i];
 
 	cudaMalloc(&keyOutput, sizeof(Int2)*totalBufferLength);
+	gpuerr();
 	cudaMalloc(&valueOutput, sizeof(char)*totalBufferLength);
+	gpuerr();
 
 	Int2* keyOutputP = keyOutput;
 	char* valueOutputP = valueOutput;
@@ -105,7 +139,9 @@ int concat_buffers(Int2** keyBuffer, char** valueBuffer, int* bufferLengths,
 	for (int i = 0; i < n; i++) {
 		bufferLength = bufferLengths[i];
 		cudaMemcpy(keyOutputP, keyBuffer[i], sizeof(Int2)*bufferLength, cudaMemcpyDeviceToDevice);
+		gpuerr();
 		cudaMemcpy(valueOutputP, valueBuffer[i], sizeof(char)*bufferLength, cudaMemcpyDeviceToDevice);
+		gpuerr();
 		keyOutputP += bufferLength;
 		valueOutputP += bufferLength; // divided by 4?
 	}
@@ -118,25 +154,37 @@ int remove_duplicate(Int2* keyInput, char* valueInput, Int2* &keyOutput, char* &
 	int* runOffsets, *runLengths;
 
 	cudaMalloc(&keyOutput, sizeof(Int2)*n);
+	gpuerr();
 	cudaMalloc(&valueOutput, sizeof(char)*n);
+	gpuerr();
 	cudaMalloc(&flags, sizeof(char)*n);
+	gpuerr();
 	cudaMalloc(&runOffsets, sizeof(int)*n);
+	gpuerr();
 	cudaMalloc(&runLengths, sizeof(int)*n);
+	gpuerr();
 
 	// sort
 	sort_key_values2(keyInput, valueInput, n);
+	gpuerr();
 
 	// make flag
 	non_trivial_runs(keyInput, runOffsets, runLengths, buffer, n);
+	gpuerr();
 	int runLength = transfer_last_element(buffer, 1);
+	gpuerr();
 	cudaMemset(flags, 1, sizeof(char)*n);
+	gpuerr();
 	int runBlock = divideCeil(runLength, NUM_THREADS);
 	non_trivial_runs_flag <<< runBlock, NUM_THREADS>>>(runOffsets, runLengths, flags, runLength);
+	gpuerr();
 
 	//filter
 	double_flag(keyInput, valueInput, flags, keyOutput, valueOutput, buffer, n);
+	gpuerr();
 
 	_cudaFree(flags, runOffsets, runLengths);
+	gpuerr();
 	return transfer_last_element(buffer, 1);
 }
 
@@ -186,8 +234,10 @@ int symspell_perform(SymspellArgs args, Int3* seq1, SymspellOutput* output) {
 
 	for (int i = 0; i < nSegment; i++) {
 		// the last segment can be smaller than others
-		if ((i == nSegment - 1) && (nSegment != 1) && (offsetLen % chunkPerSegment != 0) )
-			chunkPerSegment = offsetLen % chunkPerSegment;
+		if ((i == nSegment - 1) && (nSegment != 1)) {
+			if (offsetLen % chunkPerSegment != 0)
+				chunkPerSegment = offsetLen % chunkPerSegment;
+		}
 
 		tempPairLength =
 		    gen_pairs(combinationValues, combinationValueOffsets, carry,
