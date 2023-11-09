@@ -123,14 +123,3 @@ void cal_levenshtein(Int3* seq, Int2* index, int distance,
 	distanceOutput[tid] = newOutput;
 	flagOutput[tid] =  newOutput <= distance;
 }
-
-__global__
-void non_trivial_runs_flag(int* runOffsets, int* runLengths, char* output, int n) {
-	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-	if (tid >= n)
-		return;
-
-	int offset = runOffsets[tid];
-	for (int i = offset; i < offset + runLengths[tid] - 1; i++)
-		output[i] = 0;
-}

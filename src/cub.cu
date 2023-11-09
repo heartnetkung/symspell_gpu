@@ -47,16 +47,6 @@ void sort_key_values(Int3* keys, int* values, int n) {
 	cudaFree(buffer);
 }
 
-void sort_key_values2(Int2* keys, char* values, int n) {
-	void *buffer = NULL;
-	size_t bufferSize = 0;
-	Int2Comparator op;
-	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
-	cudaMalloc(&buffer, bufferSize);
-	cub::DeviceMergeSort::SortPairs(buffer, bufferSize, keys, values, n, op);
-	cudaFree(buffer);
-}
-
 void sort_int2(Int2* input, int n) {
 	void *buffer = NULL;
 	size_t bufferSize = 0;
@@ -79,17 +69,6 @@ void unique_counts(Int3* keys, int* output, int* outputLen, int n) {
 	    buffer, bufferSize, keys, dummy, output, outputLen, n);
 	cudaFree(buffer);
 	cudaFree(dummy);
-}
-
-void non_trivial_runs(Int2* input, int* offsetOut, int* lengthOut, int* outputLen, int n) {
-	void *buffer = NULL;
-	size_t bufferSize = 0;
-	cub::DeviceRunLengthEncode::NonTrivialRuns(
-	    buffer, bufferSize, input, offsetOut, lengthOut, outputLen, n);
-	cudaMalloc(&buffer, bufferSize);
-	cub::DeviceRunLengthEncode::NonTrivialRuns(
-	    buffer, bufferSize, input, offsetOut, lengthOut, outputLen, n);
-	cudaFree(buffer);
 }
 
 void unique(Int2* input, Int2* output, int* outputLen, int n) {
